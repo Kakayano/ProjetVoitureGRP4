@@ -2,6 +2,9 @@ from Moteur.DCMotor import DCMotor
 from Moteur.ServoMoteur import ServoMoteur
 from Capteur.rgb_sensor import RGBSensor
 from Capteur.ultrasonic_sensor import UltrasonicSensor
+from Capteur.LineFollowSensor import LineFollowSensor
+from Capteur.CurrentSensor import CurrentSensor
+from Capteur.sensor import Sensor
 
 import threading
 import time
@@ -17,6 +20,8 @@ class Car:
         self.__ultrasonic_top = UltrasonicSensor("Ultrasonic", "GPIO", 6, 5)
         self.__ultrasonic_right = UltrasonicSensor("Ultrasonic", "GPIO", 26, 19)
         self.__ultrasonic_left = UltrasonicSensor("Ultrasonic", "GPIO", 11, 9)
+        self.__line_follow_sensor = LineFollowSensor("LineFollow", "GPIO", 20)
+        self.__current_sensor = CurrentSensor("Current", "I2C")
 
     def forward(self, speed=100, period=2): # Avancer la voiture
         '''
@@ -121,3 +126,22 @@ class Car:
         self.forward(speed, duration)
         self.stop()
 
+    def count_turn(self, nbr_turn=1):
+        count = 0
+        start_time = None
+        run = True
+        while run:
+            if self.__line_follow_sensor.detect_line() == "Line detected":
+                if start_time is None:
+                    start_time = time.time()
+                elif time.time() - start_time > 1:
+                    count += 1
+                    print(f"Tour n°: {count}")
+                    start_time = None  # Reset after counting
+                else:
+                    start_time = None  # Reset if line is not detected
+                    time.sleep(0.1)  # Small delay to avoid busy-waiting
+            if count >= nbr_turn:
+                run = False
+        self.stop()
+        print(f"Final count: {count}")
