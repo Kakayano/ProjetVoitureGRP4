@@ -1,5 +1,5 @@
 from gpiozero import DistanceSensor
-from ProjetVoitureGRP4.sensor import Sensor
+from sensor import Sensor
 import threading
 import time
 
