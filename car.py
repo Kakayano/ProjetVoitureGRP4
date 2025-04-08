@@ -1,5 +1,5 @@
 from sensors.rgb_sensor import RGBSensor
-from sensors.ultrasonic_sensor import UltrasonicSensor
+from ProjetVoitureGRP4.sensors.test_ultrasonic_sensor import UltrasonicSensor
 from sensors.CurrentSensor import CurrentSensor
 from sensors.LineFollowSensor import LineFollowSensor
 from motors.dc_motor import DCMotor

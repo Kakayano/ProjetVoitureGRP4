@@ -1,32 +1,24 @@
-from gpiozero import DistanceSensor
-from sensor import Sensor
+import RPi.GPIO as GPIO
 import threading
 import time
+from sensor import Sensor
 
 class UltrasonicSensor(Sensor):
     def __init__(self, name: str, connexion_port: str, trigger_pin: int, echo_pin: int):
         super().__init__(name, connexion_port)
-
-        """
-        Initialise le capteur ultrasonique avec le nom, le port de connexion, le pin de déclenchement et le pin d'écho.
-        :param name: Nom du capteur
-        :param connexion_port: Port de connexion (non utilisé dans ce cas)
-        :param trigger_pin: Pin de déclenchement
-        :param echo_pin: Pin d'écho
-        :param sensor: Capteur ultrason (DistanceSensor de gpiozero)
-        :param distance: Distance mesurée (en cm)
-        :param stop_thread: Indicateur pour arrêter le thread de mise à jour
-        :param lock: Verrou pour gérer les accès concurrents à la distance
-        :param thread: Thread pour mettre à jour la distance
-        """
         
-        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=2.0)
+        self.trigger_pin = trigger_pin
+        self.echo_pin = echo_pin
         self.__distance = None
-        
+
+        # Initialisation des pins GPIO
+        GPIO.setmode(GPIO.BCM)  # Utilisation du mode BCM pour la numérotation des pins
+        GPIO.setup(self.trigger_pin, GPIO.OUT)
+        GPIO.setup(self.echo_pin, GPIO.IN)
+
         self.__thread = threading.Thread(target=self.update_distance)
         self.__thread.daemon = True
         self.__thread.start()
-
 
     def update_distance(self):
         """
@@ -35,23 +27,40 @@ class UltrasonicSensor(Sensor):
         Elle lit la distance du capteur toutes les 0.1 secondes et met à jour l'attribut _distance.
         La distance est convertie en centimètres (m * 100) et arrondie à deux décimales.
         """
-        with self._lock:
-            self.__distance = round(self.__sensor.distance * 100, 2)
+        while True:
+            # Envoi d'une impulsion de 10µs sur le trigger pour lancer la mesure
+            GPIO.output(self.trigger_pin, GPIO.HIGH)
+            time.sleep(0.00001)  # 10 microsecondes
+            GPIO.output(self.trigger_pin, GPIO.LOW)
+
+            # Mesure du temps pour lequel l'écho est à HIGH
+            pulse_start = time.time()
+            while GPIO.input(self.echo_pin) == GPIO.LOW:
+                pulse_start = time.time()
+            
+            pulse_end = time.time()
+            while GPIO.input(self.echo_pin) == GPIO.HIGH:
+                pulse_end = time.time()
+
+            # Calcul de la durée du pulse, et donc de la distance
+            pulse_duration = pulse_end - pulse_start
+            self.__distance = round(pulse_duration * 17150, 2)  # Distance en cm (vitesse du son = 34300 cm/s)
+
             self.read_data()
-        time.sleep(0.1)
+            time.sleep(0.1)  # Attente de 0.1 seconde avant la prochaine lecture
 
     def read_data(self):
         """
         Lit les données du capteur ultrasonique.
         :return: La distance mesurée (en cm)
         """
-        with self._lock:
-            return self.__distance
+        print(f"Distance: {self.__distance} cm")
+        return self.__distance
 
     def stop(self):
         """
-        Arrête le thread de mise à jour de la distance et ferme le capteur.
+        Arrête le thread de mise à jour de la distance et nettoie les broches GPIO.
         Cette méthode doit être appelée pour libérer les ressources lorsque le capteur n'est plus utilisé.
         """
+        GPIO.cleanup()  # Nettoie les broches utilisées par GPIO
         self.__thread.join()
-        self.__sensor.close()
