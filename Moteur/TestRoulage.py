@@ -97,6 +97,10 @@ if __name__ == "__main__":
         test_motor.motor_backward(-50)  # Reculer à 50% de la vitesse
         time.sleep(2)  # Reculer pendant 2 secondes
         test_motor.stop_motor()  # Arrêter les moteurs
+    except KeyboardInterrupt:
+        print("Interruption clavier détectée. Arrêt des moteurs...")
+        test_motor.emergency_stop()
+
     except Exception as e:
         print(f"Erreur : {e}")
     finally:
@@ -112,6 +116,12 @@ if __name__ == "__main__":
         test_motor.motor_backward(-30)
         time.sleep(3)  # Reculer pendant 3 secondes
         test_motor.emergency_stop()  # Arrêter les moteurs en cas d'urgence
+        test_motor.stop_motor()  # Arrêter les moteurs
+
+    except KeyboardInterrupt:
+        print("Interruption clavier détectée. Arrêt des moteurs...")
+        test_motor.emergency_stop()
+
     except Exception as e:
         print(f"Erreur : {e}")
     finally:
