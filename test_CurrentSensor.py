@@ -27,10 +27,10 @@ class TestCurrentSensor(unittest.TestCase):
         Teste la méthode read_data pour vérifier les valeurs lues.
         """
         self.mock_sensor.bus_voltage = 12.34
-        self.mock_sensor.current = 5678  # en mA
-        self.mock_sensor.power = 12345  # en mW
+        self.mock_sensor.current = 5678  
+        self.mock_sensor.power = 12345  
 
-        time.sleep(1)  # Simule un délai pour que le thread mette à jour les valeurs
+        time.sleep(1)  
         data = self.current_sensor.read_data()
 
         self.assertEqual(data["voltage"], 12.34)
