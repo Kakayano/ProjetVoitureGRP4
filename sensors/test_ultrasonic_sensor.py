@@ -1,4 +1,7 @@
 from ultrasonic_sensor import UltrasonicSensor
 
-sensor = UltrasonicSensor("Ultrasonic", "GPIO", 6, 5)
-sensor.update_distance()
+trig = int(input("Enter the trigger pin: "))
+echo = int(input("Enter the echo pin: "))
+sensor = UltrasonicSensor("Ultrasonic", "GPIO", trig, echo)
+while True:
+    sensor.update_distance()
