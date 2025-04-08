@@ -1,7 +1,7 @@
 import board
 import busio
 import adafruit_tcs34725
-from ProjetVoitureGRP4.sensor import Sensor
+from sensor import Sensor
 import threading
 
 class RGBSensor(Sensor):
