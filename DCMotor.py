@@ -27,14 +27,14 @@ class DCMotor:
         GPIO.output(motor_b, GPIO.LOW if pwm_value > 0 else GPIO.HIGH) 
         self.__pwm.write(self.__EN_MG if motor_a == self.__MotorL_A else self.__EN_MD, 0, int(abs(pwm_value))) 
 
-    def motor_forward(self,vitesse = 100): 
-        self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(vitesse))
-        self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(vitesse))
+    def motor_forward(self,speed = 100): 
+        self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
+        self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
 
-    def motor_backward(self,vitesse = -100):
-        if ((vitesse)<0):
-            self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(vitesse))
-            self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(vitesse))
+    def motor_backward(self,speed = -100):
+        if ((speed)<0):
+            self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
+            self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
         else:
             raise ValueError("La vitesse doit etre négative !")
 
@@ -43,12 +43,12 @@ class DCMotor:
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, 0)
         self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, 0) 
 
-    def __convert_speed(self, vitesse): 
-        vitesse = max(-100, min(100, vitesse))
-        return vitesse * 4095 / 100
+    def __convert_speed(self, speed): 
+        speed = max(-100, min(100, speed))
+        return speed * 4095 / 100
     
     def emergency_stop(self):
         print("Arrêt d'urgence des moteurs !")
-        self.stop_moteur()
+        self.stop_motor()
         
 
