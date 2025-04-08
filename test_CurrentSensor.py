@@ -1,45 +1,46 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from test_CurrentSensor import CurrentSensor
+from CurrentSensor import CurrentSensor
+import time
 
 class TestCurrentSensor(unittest.TestCase):
-    @patch('test_CurrentSensor.busio.I2C')
-    @patch('test_CurrentSensor.INA219')
-    def setUp(self, mock_ina219, mock_i2c):
+    @patch('CurrentSensor.INA219')
+    @patch('CurrentSensor.busio.I2C')
+    def setUp(self, mock_i2c, mock_ina219):
         """
-        Prépare un objet CurrentSensor pour les tests.
+        Instancie un objet CurrentSensor avec des composants INA219 et I2C simulés.
+        Initialise également des valeurs simulées pour voltage, courant et puissance.
         """
         self.mock_sensor = MagicMock()
+        self.mock_sensor.bus_voltage = 12.34
+        self.mock_sensor.current = 5678  # en mA
+        self.mock_sensor.power = 12345  # en mW
+
         mock_ina219.return_value = self.mock_sensor
         self.current_sensor = CurrentSensor(name="TestSensor", connexion_port="I2C")
 
     def test_initialization(self):
         """
-        Teste si le capteur est correctement initialisé.
+        Vérifie que les valeurs initiales du capteur sont correctement lues après démarrage.
         """
-        self.assertEqual(self.current_sensor.get_voltage(), 0.0)
-        self.assertEqual(self.current_sensor.get_current(), 0.0)
-        self.assertEqual(self.current_sensor.get_power(), 0.0)
+        time.sleep(1)  # Attend que le thread mette à jour les valeurs
+        self.assertEqual(self.current_sensor.get_voltage(), 12.34)
+        self.assertEqual(self.current_sensor.get_current(), 5.678)
+        self.assertEqual(self.current_sensor.get_power(), 12.35)
 
-    @patch('test_CurrentSensor.time.sleep', return_value=None)
-    def test_read_data(self, mock_sleep):
+    def test_read_data(self):
         """
-        Teste la méthode read_data pour vérifier les valeurs lues.
+        Vérifie que read_data() retourne les bonnes valeurs de voltage, courant et puissance.
         """
-        self.mock_sensor.bus_voltage = 12.34
-        self.mock_sensor.current = 5678  
-        self.mock_sensor.power = 12345  
-
-        time.sleep(1)  
+        time.sleep(1)
         data = self.current_sensor.read_data()
-
         self.assertEqual(data["voltage"], 12.34)
         self.assertEqual(data["current"], 5.678)
         self.assertEqual(data["power"], 12.35)
 
     def test_stop_reading(self):
         """
-        Teste si la méthode stop_reading arrête correctement le thread.
+        Vérifie que le thread de mise à jour peut être arrêté correctement.
         """
         self.current_sensor.stop_reading()
         self.assertFalse(self.current_sensor._running)
