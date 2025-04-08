@@ -10,14 +10,17 @@ class ServoMotorTest:
         self.__max_pulse = max_pulse   
 
     def set_angle(self, angle):
-        if angle < -45 or angle > 45:
-            raise ValueError("L'angle doit être compris entre -45 et 45 degrés.")
+        if angle < -30 :
+            angle = -30  # Contrainte de l'angle à -30 degrés
+        if angle > 30:
+            angle = 30
+        # Contrainte de l'angle entre -30 et 30 degrés
         
-        angle = max(-45, min(45, angle))  # Constrain l'angle entre -45 et 45
+        angle = max(-30, min(30, angle))  # Constrain l'angle entre -30 et 30
         if angle > 0:
-            pulse_width = self.__center_pulse + ((angle / 45.0) * (self.__max_pulse - self.__center_pulse))
+            pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__max_pulse - self.__center_pulse))
         else:
-            pulse_width = self.__center_pulse + ((angle / 45.0) * (self.__center_pulse - self.__min_pulse))
+            pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__center_pulse - self.__min_pulse))
         
         self.__pwm.write(0, 0, int(pulse_width))
 
@@ -26,7 +29,8 @@ class ServoMotorTest:
 
     def test_motor(self):
         print("Test du moteur servo :")
-        for angle in range(-45, 46, 5):  # Test de -45 à 45 degrés avec un pas de 5
+        self.set_angle(0)
+        for angle in range(-30, 31, 5):  # Test de -30 à 30 degrés avec un pas de 5
             try:
                 print(f"Déplacement vers {angle} degrés...")
                 self.set_angle(angle)

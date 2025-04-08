@@ -127,6 +127,22 @@ class Car:
         self.stop()
 
     def count_turn(self, nbr_turn=1):
+        '''
+        Compte le nombre de tours effectués par la voiture et arrête la voiture après un nombre spécifié de tours.
+
+        Arguments :
+            nbr_turn (int) : Le nombre de tours à compter avant d'arrêter la voiture. Par défaut, 1.
+
+        Comportement :
+            - La méthode vérifie en continu le capteur de suivi de ligne pour détecter quand la voiture traverse une ligne.
+            - Un tour est compté lorsque la ligne est détectée et qu'un intervalle de temps minimum s'est écoulé depuis la dernière détection.
+            - La voiture s'arrête automatiquement une fois que le nombre spécifié de tours (`nbr_turn`) est atteint.
+
+        Remarques :
+            - La méthode utilise un petit délai (`time.sleep(0.1)`) pour éviter une attente active lors de la réinitialisation du temps de départ.
+            - La méthode `self.stop()` est appelée pour arrêter la voiture après que le nombre de tours a été atteint.
+        '''
+        print(f"Début du comptage pour {nbr_turn} tour(s).")
         count = 0
         start_time = None
         run = True
@@ -137,10 +153,10 @@ class Car:
                 elif time.time() - start_time > 1:
                     count += 1
                     print(f"Tour n°: {count}")
-                    start_time = None  # Reset after counting
+                    start_time = None  
                 else:
-                    start_time = None  # Reset if line is not detected
-                    time.sleep(0.1)  # Small delay to avoid busy-waiting
+                    start_time = None 
+                    time.sleep(0.1)  
             if count >= nbr_turn:
                 run = False
         self.stop()
