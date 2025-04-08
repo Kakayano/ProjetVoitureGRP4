@@ -1,5 +1,6 @@
 from sensor import Sensor
 import RPi.GPIO as GPIO
+import time
 
 class LineFollowSensor(Sensor):
     def __init__(self, name: str, connexion_port: str, out_pin: int):
@@ -18,12 +19,17 @@ class LineFollowSensor(Sensor):
         """
         with self._lock:
             return GPIO.input(self._out_pin) == GPIO.LOW
+        time.sleep(0.1)
 
     def detect_line(self) -> str:
         """
         Retourne un message lisible selon la détection de ligne.
         """
-        return "Line detected" if self.read_data() else "No line detected"
+        message = "Line detected" if self.read_data() else "No line detected"
+        print(message)
+        time.sleep(1)
+        
+        # return "Line detected" if self.read_data() else "No line detected"
 
     def stop(self):
         """

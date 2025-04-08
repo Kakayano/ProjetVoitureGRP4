@@ -1,10 +1,9 @@
 from sensors.rgb_sensor import RGBSensor
-from ProjetVoitureGRP4.sensors.test_ultrasonic_sensor import UltrasonicSensor
+from sensors.ultrasonic_sensor import UltrasonicSensor
 from sensors.CurrentSensor import CurrentSensor
 from sensors.LineFollowSensor import LineFollowSensor
 from motors.dc_motor import DCMotor
 from motors.servo_motor import ServoMotor
-from log import Log
 
 class Car():
     def __init__(self):
@@ -19,7 +18,6 @@ class Car():
         self.__limit = 10
         self.__is_moving = False
         self.__laps = 0
-        self.__log = Log()
         
         
     def run(self):
@@ -27,7 +25,6 @@ class Car():
         Démarre la voiture et lit les données des capteurs.
         """
         number_of_laps = int(input("Enter the number of laps: "))
-        self.__log.write("Starting the car")
         while True:
             
             ina_data = self.__current_sensor.read_data()
@@ -36,8 +33,7 @@ class Car():
                 ina_message = "Error reading current sensor data"
             else:
                 ina_message = f"Voltage: {ina_data['voltage']}V, Current: {ina_data['current']}A, Power: {ina_data['power']}W"
-                
-            self.__log.write(ina_message)
+            print(ina_message)
             
             if self.__rgb_sensor.is_green() and not self.__is_moving:
                 self.__is_moving = True

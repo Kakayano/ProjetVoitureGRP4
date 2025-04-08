@@ -22,6 +22,7 @@ class UltrasonicSensor(Sensor):
         
         self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=2.0)
         self.__distance = None
+        self.__min_distance = 0.05
         
         self.__thread = threading.Thread(target=self.update_distance)
         self.__thread.daemon = True
@@ -38,8 +39,7 @@ class UltrasonicSensor(Sensor):
         with self._lock:
             if self.__sensor.distance is None:
                 self.__distance = None
-                print("Aucun écho reçu, la distance est hors de portée.")
-                    
+                print("Aucun écho reçu, la distance est hors de portée.") 
             elif self.__sensor.distance > self.__sensor.max_distance:
                 self.__distance = None
                 print(f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres.")
@@ -57,6 +57,8 @@ class UltrasonicSensor(Sensor):
         with self._lock:
             if self.__distance is not None:
                 print(f"Distance: {self.__distance} cm")
+            elif self.__distance < self.__min_distance:
+                print("Distance trop proche, capteur hors de portée.")
             else:
                 print("La distance est hors de portée ou aucun écho reçu.")
             return self.__distance
