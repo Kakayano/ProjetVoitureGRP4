@@ -7,7 +7,9 @@ class TestRGBSensor(unittest.TestCase):
     @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
     @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
     def test_initialization_starts_thread(self, mock_i2c, mock_tcs):
-        """Teste que le capteur est bien initialisé et que le thread démarre."""
+        """
+        Teste que le capteur est bien initialisé et que le thread démarre.
+        """
         mock_sensor = MagicMock()
         mock_sensor.color_raw = (0, 0, 0, 0)
         mock_tcs.return_value = mock_sensor
@@ -20,7 +22,9 @@ class TestRGBSensor(unittest.TestCase):
     @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
     @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
     def test_read_data_returns_correct_rgb_values(self, mock_i2c, mock_tcs):
-        """Teste que read_data retourne bien les valeurs RGB lues du capteur."""
+        """
+        Teste que read_data retourne bien les valeurs RGB lues du capteur.
+        """
         mock_sensor = MagicMock()
         mock_sensor.color_raw = (100, 200, 50, 0)  # R, G, B, Clear
         mock_tcs.return_value = mock_sensor
@@ -35,7 +39,9 @@ class TestRGBSensor(unittest.TestCase):
     @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
     @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
     def test_is_green_detects_green_correctly(self, mock_i2c, mock_tcs):
-        """Teste si is_green détecte correctement une couleur verte."""
+        """
+        Teste si is_green détecte correctement une couleur verte.
+        """
         mock_sensor = MagicMock()
         mock_sensor.color_raw = (50, 200, 30, 0)
         mock_tcs.return_value = mock_sensor
@@ -47,7 +53,9 @@ class TestRGBSensor(unittest.TestCase):
     @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
     @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
     def test_is_green_returns_false_for_non_green_color(self, mock_i2c, mock_tcs):
-        """Teste si is_green retourne False quand la couleur n’est pas assez verte."""
+        """
+        Teste si is_green retourne False quand la couleur n’est pas assez verte.
+        """
         mock_sensor = MagicMock()
         mock_sensor.color_raw = (100, 120, 100, 0)  # Vert trop faible
         mock_tcs.return_value = mock_sensor
@@ -59,7 +67,9 @@ class TestRGBSensor(unittest.TestCase):
     @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
     @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
     def test_stop_joins_thread_and_closes_sensor(self, mock_i2c, mock_tcs):
-        """Teste que stop ferme correctement le capteur et arrête le thread."""
+        """
+        Teste que stop ferme correctement le capteur et arrête le thread.
+        """
         mock_sensor = MagicMock()
         mock_sensor.color_raw = (0, 0, 0, 0)
         mock_tcs.return_value = mock_sensor
