@@ -3,6 +3,7 @@ import busio
 import adafruit_tcs34725
 from sensor import Sensor
 import threading
+import time
 
 class RGBSensor(Sensor):
     def __init__(self, name: str, connexion_port: str):
@@ -20,22 +21,12 @@ class RGBSensor(Sensor):
         self.__thread = threading.Thread(target=self.is_green)
         self.__thread.daemon = True
         self.__thread.start()
+        self.__rvb = {"rouge": 0, "vert": 0, "bleu": 0}
         
     @property
-    def sensor(self):
-        """
-        Retourne l'instance du capteur.
-        :return: Instance du capteur TCS34725
-        """
-        return self.__sensor
+    def colors(self):
+        return self.__rvb()
     
-    @sensor.setter
-    def sensor(self, value):
-        """
-        Définit l'instance du capteur.
-        :param value: Instance du capteur TCS34725
-        """
-        self.__sensor = value
 
     def read_data(self):
         """
@@ -44,11 +35,11 @@ class RGBSensor(Sensor):
         """
         r, v, b, _ = self.__sensor.color_raw
         with self._lock:
-            return {
-                "rouge": r,
-                "vert": v,
-                "bleu": b
-            }
+            print(f"Rouge: {r}, Vert: {v}, Bleu: {b}")
+            self.__rvb["rouge"] = r
+            self.__rvb["vert"] = v
+            self.__rvb["bleu"] = b
+        time.sleep(0.5)
 
     def is_green(self, threshold=1.5, min_green=150):
         """
@@ -60,7 +51,6 @@ class RGBSensor(Sensor):
         r, v, b, _ = self.__sensor.color_raw
         with self._lock:
             return v > r * threshold and v > b * threshold and v > min_green
-
 
     def stop(self):
         """

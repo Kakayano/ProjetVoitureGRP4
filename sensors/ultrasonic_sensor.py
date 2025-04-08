@@ -4,8 +4,8 @@ import threading
 import time
 
 class UltrasonicSensor(Sensor):
-    def __init__(self, name: str, connexion_port: str, trigger_pin: int, echo_pin: int):
-        super().__init__(name, connexion_port)
+    def __init__(self, name: str, connexion_port: str, log_file, trigger_pin: int, echo_pin: int):
+        super().__init__(name, connexion_port, log_file)
 
         """
         Initialise le capteur ultrasonique avec le nom, le port de connexion, le pin de déclenchement et le pin d'écho.
@@ -47,7 +47,7 @@ class UltrasonicSensor(Sensor):
                 self.__distance = round(self.__sensor.distance * 100, 2)
                 
             self.read_data()
-        time.sleep(0.2)
+        time.sleep(0.25)
 
     def read_data(self):
         """
