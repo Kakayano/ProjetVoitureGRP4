@@ -33,7 +33,7 @@ class ServoMotorTest:
         self.disable()
 
     def disable(self):
-        self.__pwm.write(0, 0, 0)
+        self.__pwm.write(0, 0, 350)
 
     def test_motor(self):
         print("Test du moteur servo :")
@@ -53,3 +53,4 @@ class ServoMotorTest:
 if __name__ == "__main__":
     test_servo = ServoMotorTest()
     test_servo.test_motor()
+    test_servo.disable()  # Désactiver le servo moteur après le test
