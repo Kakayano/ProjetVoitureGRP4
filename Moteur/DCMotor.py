@@ -48,6 +48,7 @@ class DCMotor:
         Methode pour faire avancer les moteurs
         elle prend en parametre la vitesse
         '''
+        print(f"Vitesse : {speed}")
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
         self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
 
@@ -59,6 +60,7 @@ class DCMotor:
         si c'est le cas on leve une exception
         '''
         if ((speed)<0):
+            print(f"Vitesse : {- speed}")
             self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
             self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
         else:

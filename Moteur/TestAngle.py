@@ -2,7 +2,7 @@ import time
 import PCA9685 as PCA
 
 class ServoMotorTest:
-    def __init__(self, center_pulse=320, min_pulse=200, max_pulse=500):
+    def __init__(self, center_pulse=350, min_pulse=250, max_pulse=450):
         self.__pwm = PCA.PWM() 
         self.__pwm.frequency = 60 
         self.__center_pulse = center_pulse
@@ -19,13 +19,21 @@ class ServoMotorTest:
         angle = max(-30, min(30, angle))  # Constrain l'angle entre -30 et 30
         if angle > 0:
             pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__max_pulse - self.__center_pulse))
-        else:
+        elif angle < 0:
             pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__center_pulse - self.__min_pulse))
+        else:
+            pulse_width = self.__center_pulse  # Angle is 0, set to center pulse width
+        
         
         self.__pwm.write(0, 0, int(pulse_width))
 
     def reset(self):
+        print("Réinitialisation du servo moteur...")
         self.set_angle(0)  # Réinitialise l'angle à 0 degré
+        self.disable()
+
+    def disable(self):
+        self.__pwm.write(0, 0, 0)
 
     def test_motor(self):
         print("Test du moteur servo :")
@@ -37,8 +45,8 @@ class ServoMotorTest:
                 time.sleep(1)  # Attendre que le moteur atteigne la position
             except ValueError as e:
                 print(f"Erreur : {e}")
-
-        self.reset()  # Réinitialiser le servo à 0 degré après le test
+	
+        self.reset()  # Réinitialiser le servo à 0 degré après le test 
         print("Test terminé.")
 
 # Exemple d'utilisation

@@ -48,6 +48,7 @@ class DCMotor:
         Methode pour faire avancer les moteurs
         elle prend en parametre la vitesse
         '''
+        print(f"Vitesse : {speed}")
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
         self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
 
@@ -59,6 +60,7 @@ class DCMotor:
         si c'est le cas on leve une exception
         '''
         if ((speed)<0):
+            print(f"Vitesse : {-speed}")
             self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
             self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
         else:
@@ -71,6 +73,7 @@ class DCMotor:
         '''
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, 0)
         self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, 0) 
+        GPIO.cleanup() # Nettoyer les GPIO à la fin du programme
 
     def __convert_speed(self, speed):  # Methode pour convertir la vitesse de -100 à 100 en valeur PWM de 0 à 4095
         '''
@@ -91,20 +94,6 @@ class DCMotor:
 # Exemple d'utilisation
 if __name__ == "__main__":
     test_motor = DCMotor()
-    try:
-        test_motor.motor_forward(50)  # Avancer à 50% de la vitesse
-        time.sleep(2)  # Avancer pendant 2 secondes
-        test_motor.motor_backward(-50)  # Reculer à 50% de la vitesse
-        time.sleep(2)  # Reculer pendant 2 secondes
-        test_motor.stop_motor()  # Arrêter les moteurs
-    except KeyboardInterrupt:
-        print("Interruption clavier détectée. Arrêt des moteurs...")
-        test_motor.emergency_stop()
-
-    except Exception as e:
-        print(f"Erreur : {e}")
-    finally:
-        GPIO.cleanup()  # Nettoyer les GPIO à la fin du programme
 
     try:
         test_motor.motor_forward(70)  
@@ -115,7 +104,6 @@ if __name__ == "__main__":
         time.sleep(3)  # Reculer pendant 3 secondes
         test_motor.motor_backward(-30)
         time.sleep(3)  # Reculer pendant 3 secondes
-        test_motor.emergency_stop()  # Arrêter les moteurs en cas d'urgence
         test_motor.stop_motor()  # Arrêter les moteurs
 
     except KeyboardInterrupt:

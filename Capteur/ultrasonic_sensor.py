@@ -1,6 +1,5 @@
 from gpiozero import DistanceSensor
 from sensor import Sensor
-import threading
 import time
 
 class UltrasonicSensor(Sensor):
@@ -20,15 +19,28 @@ class UltrasonicSensor(Sensor):
         :param thread: Thread pour mettre à jour la distance
         """
         
-        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=2.0)
+        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=4.0)
         self.__distance = None
+        self.__min_distance = 0.03
         
-        self.__thread = threading.Thread(target=self.update_distance)
-        self.__thread.daemon = True
-        self.__thread.start()
+    @property
+    def distance(self):
+        """
+        Propriété pour obtenir la distance mesurée par le capteur.
+        :return: Distance mesurée (en cm)
+        """
+        with self._lock:
+            return self.__distance
 
+    def run(self):
+        """
+        Méthode exécutée dans le thread pour mettre à jour la distance mesurée par le capteur.
+        Elle est appelée automatiquement lors du démarrage du thread.
+        """
+        while self._running:
+            self.read_data()
 
-    def update_distance(self):
+    def read_data(self):
         """
         Méthode pour mettre à jour la distance mesurée par le capteur.
         Cette méthode est exécutée dans un thread séparé pour éviter de bloquer le programme principal.
@@ -38,33 +50,23 @@ class UltrasonicSensor(Sensor):
         with self._lock:
             if self.__sensor.distance is None:
                 self.__distance = None
-                print("Aucun écho reçu, la distance est hors de portée.")
-                    
+                message = "Aucun écho reçu, la distance est hors de portée."
+                print(message)
+                self._log.write(message)
             elif self.__sensor.distance > self.__sensor.max_distance:
                 self.__distance = None
-                print(f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres.")
+                message = f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres."
+                print(message)
+                self._log.write(message)
+            elif self.__sensor.distance < self.__min_distance:
+                self.__distance = None
+                message = "Distance trop proche, capteur hors de portée."
+                print(message)
             else:
                 self.__distance = round(self.__sensor.distance * 100, 2)
+                message = f"Distance mesurée: {self.__distance} cm"
+                print(message)
                 
-            self.read_data()
-        time.sleep(0.2)
+            self._log.write(message)
 
-    def read_data(self):
-        """
-        Lit les données du capteur ultrasonique.
-        :return: La distance mesurée (en cm)
-        """
-        with self._lock:
-            if self.__distance is not None:
-                print(f"Distance: {self.__distance} cm")
-            else:
-                print("La distance est hors de portée ou aucun écho reçu.")
-            return self.__distance
-
-    def stop(self):
-        """
-        Arrête le thread de mise à jour de la distance et ferme le capteur.
-        Cette méthode doit être appelée pour libérer les ressources lorsque le capteur n'est plus utilisé.
-        """
-        self.__thread.join()
-        self.__sensor.close()
+        time.sleep(1)
