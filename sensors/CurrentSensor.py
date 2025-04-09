@@ -61,9 +61,10 @@ class CurrentSensor(Sensor):
         """
         Arrête le capteur et nettoie les ressources.
         """
-        super().stop()
-        self.__sensor.close()
+        self._log.write("Arrêt du capteur INA", "info")
         self.__i2c.deinit()
+        super().stop()
+        
 
     @property
     def voltage(self):

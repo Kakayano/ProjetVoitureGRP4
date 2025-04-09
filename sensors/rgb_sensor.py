@@ -109,6 +109,8 @@ class RGBSensor(Sensor):
         """
         Arrête le capteur et libère les ressources.
         """
-        super().stop()
-        self.__sensor.close()
+        self._log.write("Arrêt du capteur RGB.", "info")
+        self.__green_found = False
         self.__i2c.deinit()
+        super().stop()
+        

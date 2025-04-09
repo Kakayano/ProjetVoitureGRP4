@@ -48,5 +48,8 @@ class LineFollowSensor(Sensor):
         """
         Arrête le capteur et nettoie la configuration GPIO.
         """
-        super.stop()
+        self._log.write("Arrêt du capteur de ligne.", "info")
+        self.__is_on_line = False
         GPIO.cleanup(self._out_pin)
+        super().stop()
+        

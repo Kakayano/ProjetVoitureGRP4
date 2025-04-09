@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
 import threading
 from log import Log
 
-class Sensor(ABC, threading.Thread):
+class Sensor(threading.Thread):
     def __init__(self, name: str, connexion_port: str):
         threading.Thread.__init__(self)
         self._name = name
@@ -11,10 +10,8 @@ class Sensor(ABC, threading.Thread):
         self._running = True
         self._log = Log()
 
-    @abstractmethod
     def read_data(self):
-       with self._lock:
-            pass
+        pass
         
     def stop(self):
         self._running = False

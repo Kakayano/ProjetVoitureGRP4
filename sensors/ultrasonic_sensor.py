@@ -77,7 +77,9 @@ class UltrasonicSensor(Sensor):
         Méthode pour arrêter le capteur et nettoyer les ressources.
         Elle est appelée lorsque le programme principal se termine ou que le capteur n'est plus nécessaire.
         """
-        super().stop()
+        self._log.write("Arrêt du capteur ultrasonique.", "info")
+        self.__distance = None
         self.__sensor.close()
+        super().stop()
 
 

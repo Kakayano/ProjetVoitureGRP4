@@ -30,10 +30,5 @@ if __name__ == "__main__":
     line_follow_sensor.start()
     
     stop_threads.start()
-
-    ultrasonic_sensor.join()
-    current_sensor.join()
-    rgb_sensor.join()
-    line_follow_sensor.join()
     
     stop_threads.join()
