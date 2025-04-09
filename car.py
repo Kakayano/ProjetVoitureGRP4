@@ -106,7 +106,13 @@ class Car:
             else:
                 print("Distance non mesurée (None).")
         
-
+    def detect_green(self): 
+        self.__rgb_sensor.start()
+        isgreen = self.__rgb_sensor.green_found
+        if isgreen:
+            print("La voiture peut démarrer.")
+        else:
+            print("La voiture ne peut pas démarrer.")
 
     
 
@@ -172,6 +178,18 @@ if __name__ == "__main__":
             print("Arrêt de la voiture et sortie du programme.")
             GPIO.cleanup()
             break
+
+        elif choice == "5":
+            try:
+                test_u.detect_green() 
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+
         else:
             print("Option invalide. Veuillez réessayer.")
         
