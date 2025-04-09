@@ -51,22 +51,22 @@ class UltrasonicSensor(Sensor):
             if self.__sensor.distance is None:
                 self.__distance = None
                 message = "Aucun écho reçu, la distance est hors de portée."
-                # print(message)
+                print(message)
                 self._log.write(message)
             elif self.__sensor.distance > self.__sensor.max_distance:
                 self.__distance = None
                 message = f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres."
-                #print(message)
+                print(message)
                 self._log.write(message)
             elif self.__sensor.distance < self.__min_distance:
                 self.__distance = None
                 message = "Distance trop proche, capteur hors de portée."
-                #print(message)
+                print(message)
             else:
                 self.__distance = round(self.__sensor.distance * 100, 2)
                 message = f"Distance mesurée: {self.__distance} cm"
-                #print(message)
+                print(message)
                 
             self._log.write(message)
 
-        time.sleep(1)
+        time.sleep(0.1)  # Attendre 0.1 secondes avant de lire à nouveau la distance
