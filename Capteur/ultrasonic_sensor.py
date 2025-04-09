@@ -1,5 +1,5 @@
 from gpiozero import DistanceSensor
-from sensor import Sensor
+from Capteur.sensor import Sensor
 import time
 
 class UltrasonicSensor(Sensor):
