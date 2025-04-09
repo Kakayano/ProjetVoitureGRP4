@@ -44,7 +44,6 @@ class RGBSensor(Sensor):
             if self.is_green():
                 self._log.write("La couleur est verte.", "debug")
                 self.__green_found = True
-                return
     
 
     def read_data(self):
