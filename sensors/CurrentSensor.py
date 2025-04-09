@@ -55,6 +55,15 @@ class CurrentSensor(Sensor):
             # print(error)
             self._log.write(error, "error")
             return None
+        
+        
+    def stop(self):
+        """
+        Arrête le capteur et nettoie les ressources.
+        """
+        super().stop()
+        self.__sensor.close()
+        self.__i2c.deinit()
 
     @property
     def voltage(self):

@@ -71,5 +71,13 @@ class UltrasonicSensor(Sensor):
                 self.__distance = None
 
         time.sleep(1)
+        
+    def stop(self):
+        """
+        Méthode pour arrêter le capteur et nettoyer les ressources.
+        Elle est appelée lorsque le programme principal se termine ou que le capteur n'est plus nécessaire.
+        """
+        super().stop()
+        self.__sensor.close()
 
 

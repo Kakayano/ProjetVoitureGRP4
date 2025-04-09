@@ -43,3 +43,10 @@ class LineFollowSensor(Sensor):
             # print(error)
             self._log.write(error, "error")
             return False
+
+    def stop(self):
+        """
+        Arrête le capteur et nettoie la configuration GPIO.
+        """
+        super.stop()
+        GPIO.cleanup(self._out_pin)
