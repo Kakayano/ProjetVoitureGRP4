@@ -34,7 +34,7 @@ class TestServoMoteur(unittest.TestCase):
         mock_pwm_class.return_value = self.mock_pwm
 
         # On crée le mock de la classe ServoMoteur
-        self.servo = ServoMoteur(channel=1, centre_pulse=300, min_pulse=200, max_pulse=400)
+        self.servo = ServoMoteur(channel=1, centre_pulse=300, min_pulse=200, max_pulse=500)
 
     def test_set_angle_zero(self):
         self.servo.set_angle(0)
@@ -43,7 +43,7 @@ class TestServoMoteur(unittest.TestCase):
 
     def test_set_angle_positive(self):
         self.servo.set_angle(45)
-        expected_pulse = 400  # Impuslion maximale
+        expected_pulse = 500  # Impuslion maximale
         self.mock_pwm.write.assert_called_with(1, 0, expected_pulse)
 
     def test_set_angle_negative(self):
@@ -53,7 +53,7 @@ class TestServoMoteur(unittest.TestCase):
 
     def test_angle_clamped_above_max(self):
         self.servo.set_angle(90)  # Devrait rester sur 45
-        expected_pulse = 400
+        expected_pulse = 500
         self.mock_pwm.write.assert_called_with(1, 0, expected_pulse)
 
     def test_angle_clamped_below_min(self):
