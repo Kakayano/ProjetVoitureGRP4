@@ -70,17 +70,17 @@ class TestDCMotor(unittest.TestCase):
     def test_convert_speed(self):
         """Teste la conversion vitesse % vers valeur PWM."""
         # Accès à la méthode privée
-        convertir_vitesse = self.motor._DCMotor__convert_speed
+        convert_speed = self.motor._DCMotor__convert_speed
         
         # Test des valeurs normales
-        self.assertEqual(convertir_vitesse(100), 4095)
-        self.assertEqual(convertir_vitesse(50), 2047.5)
-        self.assertEqual(convertir_vitesse(0), 0)
-        self.assertEqual(convertir_vitesse(-50), -2047.5)
+        self.assertEqual(convert_speed(100), 4095)
+        self.assertEqual(convert_speed(50), 2047.5)
+        self.assertEqual(convert_speed(0), 0)
+        self.assertEqual(convert_speed(-50), -2047.5)
         
         # Test du limiteur de vitesse
-        self.assertEqual(convertir_vitesse(150), 4095)
-        self.assertEqual(convertir_vitesse(-150), -4095)
+        self.assertEqual(convert_speed(150), 4095)
+        self.assertEqual(convert_speed(-150), -4095)
         
     def test_motor_forward(self):
         """Teste le mouvement avant à vitesse par défaut."""
