@@ -48,26 +48,27 @@ class UltrasonicSensor(Sensor):
         La distance est convertie en centimètres (m * 100) et arrondie à deux décimales.
         """
         with self._lock:
-            if self.__sensor.distance is None:
+            try:
+                if self.__sensor.distance is None:
+                    self.__distance = None
+                    message = "Aucun écho reçu, la distance est hors de portée."
+                    self._log.write(message, "warning")
+                elif self.__sensor.distance > self.__sensor.max_distance:
+                    self.__distance = None
+                    message = f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres."
+                    self._log.write(message, "warning")
+                elif self.__sensor.distance < self.__min_distance:
+                    self.__distance = None
+                    message = "Distance trop proche, capteur hors de portée."
+                    self._log.write(message, "warning")
+                else:
+                    self.__distance = round(self.__sensor.distance * 100, 2)
+                    message = f"Distance mesurée: {self.__distance} cm"
+                    self._log.write(message, "debug")
+            except Exception as e:
+                error = f"Erreur de lecture du capteur : {e}"
+                self._log.write(error, "error")
                 self.__distance = None
-                message = "Aucun écho reçu, la distance est hors de portée."
-                print(message)
-                self._log.write(message)
-            elif self.__sensor.distance > self.__sensor.max_distance:
-                self.__distance = None
-                message = f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres."
-                print(message)
-                self._log.write(message)
-            elif self.__sensor.distance < self.__min_distance:
-                self.__distance = None
-                message = "Distance trop proche, capteur hors de portée."
-                print(message)
-            else:
-                self.__distance = round(self.__sensor.distance * 100, 2)
-                message = f"Distance mesurée: {self.__distance} cm"
-                print(message)
-                
-            self._log.write(message)
 
         time.sleep(1)
 

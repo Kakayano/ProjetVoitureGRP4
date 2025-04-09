@@ -23,7 +23,7 @@ class CurrentSensor(Sensor):
         Démarre la lecture des données du capteur dans un thread séparé.
         """
         while self._running:
-            print("Démarrage de la lecture des données...")
+            # print("Démarrage de la lecture des données...")
             self.__update_loop()
             time.sleep(1)
 
@@ -35,8 +35,8 @@ class CurrentSensor(Sensor):
             self.__voltage = round(self.__sensor.bus_voltage, 2)
             self.__current = round(self.__sensor.current / 1000, 3)
             self.__power = round(self.__sensor.power / 1000, 2)
-            print(f"Current (brut): {self.__sensor.current}mA, Power (brut): {self.__sensor.power}mW")
-            print(f"Voltage: {self.__voltage}V, Current: {self.__current}A, Power: {self.__power}W")
+            # print(f"Voltage: {self.__voltage}V, Current: {self.__current}A, Power: {self.__power}W")
+            self._log.write(f"Voltage: {self.__voltage}V, Current: {self.__current}A, Power: {self.__power}W", "debug")
         time.sleep(1)
 
     def read_data(self):
@@ -52,8 +52,8 @@ class CurrentSensor(Sensor):
                 }
         except Exception as e:
             error = f"Erreur de lecture du capteur : {e}"
-            print(error)
-            self._log.write(error)
+            # print(error)
+            self._log.write(error, "error")
             return None
 
     @property

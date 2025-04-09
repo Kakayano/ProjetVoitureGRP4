@@ -37,12 +37,12 @@ class RGBSensor(Sensor):
     
     def run(self):
         while self._running:
-            print("Vérification de la couleur...")
+            # print("Vérification de la couleur...")
             self.read_data()
             time.sleep(1)
             
             if self.is_green():
-                print("La couleur est verte.")
+                self._log.write("La couleur est verte.", "debug")
                 self.__green_found = True
                 return
     
@@ -58,17 +58,19 @@ class RGBSensor(Sensor):
                 with self._lock:
                     self.__rvb = {"rouge": 0, "vert": 0, "bleu": 0}
                     error = "Erreur : Données manquantes ou invalides pour RGB."
-                    self._log.write(error)
+                    self._log.write(error, "error")
                 raise ValueError(error)
                 
             if not r or not v or not b:
                 with self._lock:
                     self.__rvb = {"rouge": r if r else 0, "vert": v if v else 0, "bleu": b if b else 0}
                     error = f"Avertissement : Une ou plusieurs valeurs RGB sont à 0. Valeurs lues: Rouge={r}, Vert={v}, Bleu={b}."
-                    self._log.write(error)
+                    self._log.write(error, "warning")
                 raise ValueError(error)
             
-            print(f"Rouge: {r}, Vert: {v}, Bleu: {b}")
+            debug_message = f"Rouge: {r}, Vert: {v}, Bleu: {b}"
+            # print(debug_message)
+            self._log.write(debug_message, "debug")
             with self._lock:
                 self.__rvb["rouge"] = r
                 self.__rvb["vert"] = v
@@ -77,7 +79,7 @@ class RGBSensor(Sensor):
                 
         except Exception as e:
             error = f"Erreur lors de la lecture des données RGB: {e}"
-            self._log.write(error)
+            self._log.write(error, "error")
             print(error)
             with self._lock:
                 self.__rvb["rouge"] = 0
@@ -87,7 +89,7 @@ class RGBSensor(Sensor):
         
         time.sleep(1)
 
-    def is_green(self, threshold=1.2):
+    def is_green(self):
         """
         Vérifie si la couleur détectée est principalement verte.
         :param threshold: Seuil pour déterminer si la couleur est verte
@@ -95,10 +97,10 @@ class RGBSensor(Sensor):
         """
         try:
             with self._lock:
-                self.__green_found = self.__rvb["vert"] > self.__rvb["rouge"] * threshold and self.__rvb["vert"] > self.__rvb["bleu"] * threshold
+                self.__green_found = self.__rvb["vert"] > self.__rvb["rouge"] and self.__rvb["vert"] > self.__rvb["bleu"]
         except Exception as e:
             error = f"Erreur lors de la vérification de la couleur: {e}"
-            self._log.write(error)
-            print(error)
+            self._log.write(error, "error")
+            # print(error)
             self.__green_found = False
         return self.__green_found

@@ -12,13 +12,6 @@ current_sensor = CurrentSensor("Current", "I2C")
 rgb_sensor = RGBSensor("RGB", "I2C")
 line_follow_sensor = LineFollowSensor("LineFollower", "GPIO", 20)
 
-
-ultrasonic_sensor.start()
-current_sensor.start()
-rgb_sensor.start()
-line_follow_sensor.start()
-
-
 def stop_sensors():
     input("\nAppuyez sur Enter pour arrêter les capteurs...\n")
     ultrasonic_sensor.stop()
@@ -27,12 +20,20 @@ def stop_sensors():
     line_follow_sensor.stop()
     time.sleep(1)
     print("\nLes capteurs ont été arrêtés.\n")
-    
-stop_threads = threading.Thread(target=stop_sensors)
-stop_threads.start()
 
-ultrasonic_sensor.join()
-current_sensor.join()
-rgb_sensor.join()
-line_follow_sensor.join()
-stop_threads.join()
+stop_threads = threading.Thread(target=stop_sensors)
+
+if __name__ == "__main__":
+    ultrasonic_sensor.start()
+    current_sensor.start()
+    rgb_sensor.start()
+    line_follow_sensor.start()
+    
+    stop_threads.start()
+
+    ultrasonic_sensor.join()
+    current_sensor.join()
+    rgb_sensor.join()
+    line_follow_sensor.join()
+    
+    stop_threads.join()

@@ -24,9 +24,10 @@ class LineFollowSensor(Sensor):
         
     def run(self):
         while self._running:
-            print("Vérification de la ligne...")
+            # print("Vérification de la ligne...")
             self.__is_on_line = self.read_data()
-            print(f"Capteur sur la ligne : {self.__is_on_line}")
+            # print(f"Capteur sur la ligne : {self.__is_on_line}")
+            self._log.write(f"Capteur sur la ligne : {self.__is_on_line}", "debug")
             time.sleep(1)
                 
             
@@ -39,6 +40,6 @@ class LineFollowSensor(Sensor):
                 return GPIO.input(self._out_pin) == GPIO.HIGH
         except Exception as e:
             error = f"Erreur de lecture du capteur : {e}"
-            print(error)
-            self._log.write(error)
+            # print(error)
+            self._log.write(error, "error")
             return False
