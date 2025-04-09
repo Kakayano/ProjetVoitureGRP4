@@ -54,14 +54,45 @@ class Car:
         Méthode pour éviter les obstacles détectés par le capteur ultrasonique
         '''
         run = True
-        #self.__motor.motor_forward(50)
+        self.__motor.motor_forward(50)
         while run:
             self.__ultrasonic_sensor_top.read_data() # On lit les données du capteur ultrasonique
             distance = self.__ultrasonic_sensor_top.distance # On récupère la distance mesurée par le capteur
-            print(f"Distance mesurée : {distance} cm")
             if distance is not None and distance < 20: # Si un obstacle est détecté à moins de 20 cm
                 print(f"Obstacle détecté à {distance} cm. Arrêt des moteurs.")
                 self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(30) # On tourne le servo moteur à gauche
+                self.__motor.motor_forward(30)
+                time.sleep(3)
+                self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(-30) # On tourne le servo moteur à droite
+                self.__motor.motor_forward(30)
+                time.sleep(3)
+                self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(0) # On remet le servo moteur à 0
+                self.__motor.motor_forward(30)
+                time.sleep(5)
+                self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(-30)
+                self.__motor.motor_forward(30)
+                time.sleep(3)
+                self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(30)
+                self.__motor.motor_forward(30)
+                time.sleep(3)
+                self.__motor.stop_motor()
+                time.sleep(0.5)
+                self.__servo.set_angle(0) # On remet le servo moteur à 0
+                self.__motor.motor_forward(30)
+                time.sleep(2)
+                self.__motor.stop_motor()
+                self.__servo.disable()
+                print("Obstacle évité.")
                 run = False
             elif distance is not None:
                 print(f"Distance : {distance} m")
