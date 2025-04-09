@@ -1,52 +1,63 @@
-import unittest
-from unittest.mock import patch, MagicMock
-from ProjetVoitureGRP4.ultrasonic_sensor import UltrasonicSensor
-import threading
+from gpiozero import DistanceSensor
+from sensor import Sensor
+import time
 
-class TestUltrasonicSensor(unittest.TestCase):
+class UltrasonicSensor(Sensor):
+    def __init__(self, name: str, connexion_port: str, trigger_pin: int, echo_pin: int):
+        super().__init__(name, connexion_port)
 
-    @patch('ProjetVoitureGRP4.ultrasonic_sensor.DistanceSensor')
-    def test_initialization_should_create_sensor_and_start_thread(self, mock_distance_sensor):
         """
-        Teste que le capteur est initialisé correctement et que le thread démarre.
+        Initialise le capteur ultrasonique avec le nom, le port de connexion, le pin de déclenchement et le pin d'écho.
+        :param name: Nom du capteur
+        :param connexion_port: Port de connexion (non utilisé dans ce cas)
+        :param trigger_pin: Pin de déclenchement
+        :param echo_pin: Pin d'écho
+        :param sensor: Capteur ultrason (DistanceSensor de gpiozero)
+        :param distance: Distance mesurée (en cm)
+        :param stop_thread: Indicateur pour arrêter le thread de mise à jour
+        :param lock: Verrou pour gérer les accès concurrents à la distance
+        :param thread: Thread pour mettre à jour la distance
         """
-        mock_sensor_instance = MagicMock()
-        mock_distance_sensor.return_value = mock_sensor_instance
-
-        sensor = UltrasonicSensor("CapteurTest", "PortX", trigger_pin=23, echo_pin=24)
-
-        self.assertIsNotNone(sensor)
-        mock_distance_sensor.assert_called_once_with(echo=24, trigger=23, max_distance=2.0)
-        self.assertTrue(sensor._UltrasonicSensor__thread.is_alive())
-
-    @patch('ProjetVoitureGRP4.ultrasonic_sensor.DistanceSensor')
-    def test_update_distance_should_store_rounded_distance_in_cm(self, mock_distance_sensor):
+        
+        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=2.0)
+        self.__distance = None
+        self.__min_distance = 0.05
+        
+    @property
+    def distance(self):
         """
-        Teste que la méthode update_distance lit et stocke correctement la distance en cm.
+        Propriété pour obtenir la distance mesurée par le capteur.
+        :return: Distance mesurée (en cm)
         """
-        mock_sensor_instance = MagicMock()
-        mock_sensor_instance.distance = 1.2345  # mètres
-        mock_distance_sensor.return_value = mock_sensor_instance
+        with self._lock:
+            return self.__distance
 
-        sensor = UltrasonicSensor("CapteurTest", "PortX", trigger_pin=23, echo_pin=24)
-
-        sensor.update_distance()
-
-        expected_distance = round(1.2345 * 100, 2)
-        actual_distance = sensor.read_data()
-
-        self.assertEqual(actual_distance, expected_distance)
-
-    @patch('ProjetVoitureGRP4.ultrasonic_sensor.DistanceSensor')
-    def test_read_data_should_return_last_measured_distance(self, mock_distance_sensor):
+    def run(self):
         """
-        Teste que read_data retourne la distance correctement mise à jour.
+        Méthode exécutée dans le thread pour mettre à jour la distance mesurée par le capteur.
+        Elle est appelée automatiquement lors du démarrage du thread.
         """
-        mock_sensor_instance = MagicMock()
-        mock_sensor_instance.distance = 0.5  # mètres
-        mock_distance_sensor.return_value = mock_sensor_instance
+        while True:
+            self.read_data()
 
-        sensor = UltrasonicSensor("CapteurTest", "PortX", trigger_pin=23, echo_pin=24)
-
-        sensor.update_distance()
-        result = sensor.read_data()
+    def read_data(self):
+        """
+        Méthode pour mettre à jour la distance mesurée par le capteur.
+        Cette méthode est exécutée dans un thread séparé pour éviter de bloquer le programme principal.
+        Elle lit la distance du capteur toutes les 0.1 secondes et met à jour l'attribut _distance.
+        La distance est convertie en centimètres (m * 100) et arrondie à deux décimales.
+        """
+        with self._lock:
+            if self.__sensor.distance is None:
+                self.__distance = None
+                print("Aucun écho reçu, la distance est hors de portée.") 
+            elif self.__sensor.distance > self.__sensor.max_distance:
+                self.__distance = None
+                print(f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres.")
+            elif self.__sensor.distance < self.__min_distance:
+                self.__distance = None
+                print("Distance trop proche, capteur hors de portée.")
+            else:
+                self.__distance = round(self.__sensor.distance * 100, 2)
+                print(f"Distance mesurée: {self.__distance} cm")
+        time.sleep(0.25)

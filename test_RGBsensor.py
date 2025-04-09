@@ -1,87 +1,93 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from ProjetVoitureGRP4.rgb_sensor import RGBSensor
+from RGB_sensor import RGBSensor
 
 class TestRGBSensor(unittest.TestCase):
+    """
+    Classe de tests unitaires pour le capteur RGB TCS34725.
+    Simule le matériel grâce à des mocks.
+    """
 
-    @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
-    @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
-    def test_initialization_starts_thread(self, mock_i2c, mock_tcs):
+    def setUp(self):
         """
-        Teste que le capteur est bien initialisé et que le thread démarre.
+        Méthode appelée avant chaque test.
+        Initialise un objet RGBSensor avec mocks pour l'I2C et le capteur.
         """
-        mock_sensor = MagicMock()
-        mock_sensor.color_raw = (0, 0, 0, 0)
-        mock_tcs.return_value = mock_sensor
+        self.nom = "Capteur RGB"
+        self.port = "/dev/i2c-1"
 
-        sensor = RGBSensor("CapteurRGB", "PortI2C")
-
-        self.assertTrue(sensor._RGBSensor__thread.is_alive())
-        self.assertEqual(sensor.sensor, mock_sensor)
-
-    @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
-    @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
-    def test_read_data_returns_correct_rgb_values(self, mock_i2c, mock_tcs):
+    @patch("RGB_sensor.adafruit_tcs34725.TCS34725")
+    @patch("RGB_sensor.busio.I2C")
+    def test_lecture_valeurs_rgb_valides(self, mock_i2c, mock_tcs):
         """
-        Teste que read_data retourne bien les valeurs RGB lues du capteur.
+        Vérifie que le capteur lit correctement des valeurs RGB valides.
         """
-        mock_sensor = MagicMock()
-        mock_sensor.color_raw = (100, 200, 50, 0)  # R, G, B, Clear
-        mock_tcs.return_value = mock_sensor
+        mock_instance = MagicMock()
+        mock_instance.color_raw = (120, 200, 90, 0)
+        mock_tcs.return_value = mock_instance
 
-        sensor = RGBSensor("CapteurRGB", "PortI2C")
+        capteur = RGBSensor(self.nom, self.port)
+        couleurs = capteur.read_data()
 
-        result = sensor.read_data()
-        expected = {"rouge": 100, "vert": 200, "bleu": 50}
+        self.assertEqual(couleurs["rouge"], 120)
+        self.assertEqual(couleurs["vert"], 200)
+        self.assertEqual(couleurs["bleu"], 90)
 
-        self.assertEqual(result, expected)
-
-    @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
-    @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
-    def test_is_green_detects_green_correctly(self, mock_i2c, mock_tcs):
+    @patch("RGB_sensor.adafruit_tcs34725.TCS34725")
+    @patch("RGB_sensor.busio.I2C")
+    def test_detection_vert_vrai(self, mock_i2c, mock_tcs):
         """
-        Teste si is_green détecte correctement une couleur verte.
+        Vérifie que la détection du vert retourne True si le vert est dominant.
         """
-        mock_sensor = MagicMock()
-        mock_sensor.color_raw = (50, 200, 30, 0)
-        mock_tcs.return_value = mock_sensor
+        mock_instance = MagicMock()
+        mock_instance.color_raw = (50, 150, 40, 0)
+        mock_tcs.return_value = mock_instance
 
-        sensor = RGBSensor("CapteurRGB", "PortI2C")
+        capteur = RGBSensor(self.nom, self.port)
+        capteur.read_data()
+        self.assertTrue(capteur.is_green())
 
-        self.assertTrue(sensor.is_green(threshold=1.5, min_green=100))
-
-    @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
-    @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
-    def test_is_green_returns_false_for_non_green_color(self, mock_i2c, mock_tcs):
+    @patch("RGB_sensor.adafruit_tcs34725.TCS34725")
+    @patch("RGB_sensor.busio.I2C")
+    def test_detection_vert_faux(self, mock_i2c, mock_tcs):
         """
-        Teste si is_green retourne False quand la couleur n’est pas assez verte.
+        Vérifie que la détection du vert retourne False si le vert n'est pas dominant.
         """
-        mock_sensor = MagicMock()
-        mock_sensor.color_raw = (100, 120, 100, 0)  # Vert trop faible
-        mock_tcs.return_value = mock_sensor
+        mock_instance = MagicMock()
+        mock_instance.color_raw = (100, 110, 120, 0)
+        mock_tcs.return_value = mock_instance
 
-        sensor = RGBSensor("CapteurRGB", "PortI2C")
+        capteur = RGBSensor(self.nom, self.port)
+        capteur.read_data()
+        self.assertFalse(capteur.is_green())
 
-        self.assertFalse(sensor.is_green(threshold=1.5, min_green=150))
-
-    @patch("ProjetVoitureGRP4.rgb_sensor.adafruit_tcs34725.TCS34725")
-    @patch("ProjetVoitureGRP4.rgb_sensor.busio.I2C")
-    def test_stop_joins_thread_and_closes_sensor(self, mock_i2c, mock_tcs):
+    @patch("RGB_sensor.adafruit_tcs34725.TCS34725")
+    @patch("RGB_sensor.busio.I2C")
+    def test_valeurs_nulles_ou_invalides(self, mock_i2c, mock_tcs):
         """
-        Teste que stop ferme correctement le capteur et arrête le thread.
+        Vérifie que le capteur gère correctement les valeurs nulles et lève une exception.
         """
-        mock_sensor = MagicMock()
-        mock_sensor.color_raw = (0, 0, 0, 0)
-        mock_tcs.return_value = mock_sensor
+        mock_instance = MagicMock()
+        mock_instance.color_raw = (None, None, None, 0)
+        mock_tcs.return_value = mock_instance
 
-        sensor = RGBSensor("CapteurRGB", "PortI2C")
-        sensor._RGBSensor__thread = MagicMock()
-        sensor._RGBSensor__thread.join = MagicMock()
+        capteur = RGBSensor(self.nom, self.port)
+        with self.assertRaises(ValueError):
+            capteur.read_data()
 
-        sensor.stop()
+    @patch("RGB_sensor.adafruit_tcs34725.TCS34725")
+    @patch("RGB_sensor.busio.I2C")
+    def test_valeurs_rgb_zero(self, mock_i2c, mock_tcs):
+        """
+        Vérifie que le capteur signale une alerte si une ou plusieurs valeurs RGB sont à 0.
+        """
+        mock_instance = MagicMock()
+        mock_instance.color_raw = (0, 100, 90, 0)
+        mock_tcs.return_value = mock_instance
 
-        sensor._RGBSensor__thread.join.assert_called_once()
-        mock_sensor.close.assert_called_once()
+        capteur = RGBSensor(self.nom, self.port)
+        with self.assertRaises(ValueError):
+            capteur.read_data()
 
 if __name__ == "__main__":
     unittest.main()
