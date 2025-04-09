@@ -13,7 +13,7 @@ class Car:
         '''
         self.__motor = DCMotor()
         self.__servo = ServoMoteur()
-        self.__ultrasonic_sensor_top = UltrasonicSensor("Ultrasonic", "GPIO", trigger=6, echo=5) # Capteur ultrasonique pour la détection d'obstacles
+        self.__ultrasonic_sensor_top = UltrasonicSensor("Ultrasonic", "GPIO", 6, 5) # Capteur ultrasonique pour la détection d'obstacles
         
 
     
@@ -54,15 +54,19 @@ class Car:
         Méthode pour éviter les obstacles détectés par le capteur ultrasonique
         '''
         run = True
-        self.__motor.motor_forward(50)
+        #self.__motor.motor_forward(50)
         while run:
-            distance = self.__ultrasonic_sensor_top.distance
-            if distance is not None and distance < 0.5:
-                print(f"Obstacle détecté à {distance:.2f} m. Arrêt des moteurs.")
+            self.__ultrasonic_sensor_top.read_data() # On lit les données du capteur ultrasonique
+            distance = self.__ultrasonic_sensor_top.distance # On récupère la distance mesurée par le capteur
+            print(f"Distance mesurée : {distance} cm")
+            if distance is not None and distance < 20: # Si un obstacle est détecté à moins de 20 cm
+                print(f"Obstacle détecté à {distance} cm. Arrêt des moteurs.")
                 self.__motor.stop_motor()
                 run = False
+            elif distance is not None:
+                print(f"Distance : {distance} m")
             else:
-                print(f"Distance : {distance:.2f} m")
+                print("Distance non mesurée (None).")
         
 
 
@@ -81,7 +85,7 @@ if __name__ == "__main__":
         print("\nMenu:")
         print("1. Faire avancer la voiture")
         print("2. Faire un demi-tour")
-        print("3.")
+        print("3. Eviter les obstacles")
         print("4. Arrêter la voiture et quitter")
         
         choice = input("Choisissez une option (1-4): ")
@@ -110,7 +114,16 @@ if __name__ == "__main__":
                 test_u.stop_car()
                 
         elif choice == "3":
-            pass
+            try:
+                test_u.dodge_obstacle() # Test de la méthode dodge_obstacle
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+
         elif choice == "4":
             print("Arrêt de la voiture et sortie du programme.")
             GPIO.cleanup()
