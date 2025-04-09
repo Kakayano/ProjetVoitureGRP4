@@ -61,3 +61,6 @@ class UltrasonicSensor(Sensor):
                 self.__distance = round(self.__sensor.distance * 100, 2)
                 print(f"Distance mesurée: {self.__distance} cm")
         time.sleep(0.25)
+
+if __name__ == "__main__":
+    unittest.main()
