@@ -17,7 +17,7 @@ class RGBSensor(Sensor):
         """
         self.__i2c = busio.I2C(board.SCL, board.SDA)
         self.__sensor = adafruit_tcs34725.TCS34725(self.__i2c)
-        self.__sensor.integration_time = 15
+        self.__sensor.integration_time = 25
         self.__rvb = {"rouge": 0, "vert": 0, "bleu": 0}
         self.__green_found = False
         
@@ -38,6 +38,7 @@ class RGBSensor(Sensor):
     def run(self):
         while True:
             print("Vérification de la couleur...")
+            self.read_data()
             time.sleep(1)
             
             if self.is_green():
