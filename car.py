@@ -4,6 +4,7 @@ from sensors.CurrentSensor import CurrentSensor
 from sensors.LineFollowSensor import LineFollowSensor
 from motors.dc_motor import DCMotor
 from motors.servo_motor import ServoMotor
+import threading
 
 class Car():
     def __init__(self):
@@ -25,30 +26,34 @@ class Car():
         Démarre la voiture et lit les données des capteurs.
         """
         number_of_laps = int(input("Enter the number of laps: "))
-        while True:
+        ina_data = self.__current_sensor.read_data()
+        ina_message = "No current sensor data"
+        if ina_data is None:
+            ina_message = "Error reading current sensor data"
+        else:
+            ina_message = f"Voltage: {ina_data['voltage']}V, Current: {ina_data['current']}A, Power: {ina_data['power']}W"
+        print(ina_message)
+        
+        self.__rgb_sensor.start()
+        green_found = self.__rgb_sensor.green_found
+        
+        if green_found:
+            self.__is_moving = True
+            self.__dc_motor.moteur_avance()
             
-            ina_data = self.__current_sensor.read_data()
-            ina_message = "No current sensor data"
-            if ina_data is None:
-                ina_message = "Error reading current sensor data"
-            else:
-                ina_message = f"Voltage: {ina_data['voltage']}V, Current: {ina_data['current']}A, Power: {ina_data['power']}W"
-            print(ina_message)
-            
-            if self.__rgb_sensor.is_green() and not self.__is_moving:
-                self.__is_moving = True
-                self.__dc_motor.moteur_avance()
-                
             angle = 0
             direction = 0
-            front_distance = self.__front_ultrasonic_sensor.update_distance()
+            self.__front_ultrasonic_sensor.start()
+            front_distance = self.__front_ultrasonic_sensor.distance
                         
-            if self.__left_ultrasonic_sensor.update_distance() > self.__right_ultrasonic_sensor.update_distance():
+            if self.__left_ultrasonic_sensor.distance > self.__right_ultrasonic_sensor.distance:
                 direction = -1
             else: 
                 direction = 1
             
             if front_distance < 30:
+                self.__right_ultrasonic_sensor.start()
+                self.__left_ultrasonic_sensor.start()
                 angle = 15
                 self.__dc_motor.moteur_avance(75)
             elif front_distance < 20:
@@ -63,15 +68,10 @@ class Car():
                 
             self.__servo_motor.set_angle(direction * angle)
             
-            if self.__line_sensor.is_on_line():
+            self.__line_sensor.start()
+            is_on_line = self.__line_sensor.is_on_line
+            if is_on_line and self.__is_moving:
                 self.__laps += 1
                 print(f"Number of laps: {self.__laps}")
                 if self.__laps >= number_of_laps:
                     self.__dc_motor.stop_moteur()
-                    break
-                
-                
-                
-                    
-                    
-            

@@ -2,7 +2,6 @@ import board
 import busio
 import adafruit_tcs34725
 from sensor import Sensor
-import threading
 import time
 
 class RGBSensor(Sensor):
@@ -19,16 +18,32 @@ class RGBSensor(Sensor):
         self.__i2c = busio.I2C(board.SCL, board.SDA)
         self.__sensor = adafruit_tcs34725.TCS34725(self.__i2c)
         self.__sensor.integration_time = 15
-        
-        self.__thread = threading.Thread(target=self.is_green)
-        self.__thread.daemon = True
-        self.__thread.start()
         self.__rvb = {"rouge": 0, "vert": 0, "bleu": 0}
-
+        self.__green_found = False
         
     @property
+    def green_found(self):
+        """
+        Propriété pour vérifier si la couleur verte a été trouvée.
+        :return: True si la couleur verte a été trouvée, False sinon
+        """
+        with self._lock:
+            return self.__green_found
+
+    @property
     def colors(self):
-        return self.__rvb()
+        with self._lock:
+            return self.__rvb
+    
+    def run(self):
+        while True:
+            print("Vérification de la couleur...")
+            time.sleep(1)
+            
+            if self.is_green():
+                print("La couleur est verte.")
+                self.__green_found = True
+                return
     
 
     def read_data(self):
@@ -66,14 +81,10 @@ class RGBSensor(Sensor):
         :param min_green: Valeur minimale pour considérer une couleur comme verte
         :return: True si la couleur est verte, False sinon
         """
-        r, v, b, _ = self.__sensor.color_raw
-        with self._lock:
-            return v > r * threshold and v > b * threshold and v > min_green
-
-    def stop(self):
-        """
-        Arrête le thread de mise à jour du capteur.
-        Cette méthode doit être appelée pour libérer les ressources lorsque le capteur n'est plus utilisé.
-        """
-        self.__thread.join()
-        self.__sensor.close()
+        try:
+            r, v, b, _ = self.__sensor.color_raw
+            with self._lock:
+                self.__green_found = v > r * threshold and v > b * threshold and v > min_green
+        except Exception as e:
+            print(f"Erreur lors de la vérification de la couleur: {e}")
+            self.__green_found = False

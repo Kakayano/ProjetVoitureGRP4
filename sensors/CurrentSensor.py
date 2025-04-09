@@ -34,6 +34,7 @@ class CurrentSensor(Sensor):
                 self._voltage = round(self.__sensor.bus_voltage, 2)
                 self._current = round(self.__sensor.current / 1000, 3)
                 self._power = round(self.__sensor.power / 1000, 2)
+                print(f"Voltage: {self._voltage}V, Current: {self._current}A, Power: {self._power}W")
             time.sleep(1)
 
     def read_data(self):

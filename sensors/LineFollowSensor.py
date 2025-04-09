@@ -9,30 +9,31 @@ class LineFollowSensor(Sensor):
         """
         super().__init__(name, connexion_port)
         self._out_pin = out_pin
+        self.__is_on_line = False
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self._out_pin, GPIO.IN)
-
-    def read_data(self) -> bool:
+        
+    @property
+    def is_on_line(self):
         """
-        Lit l'état du capteur : True si ligne détectée (niveau bas), False sinon.
+        Propriété pour vérifier si le capteur est sur la ligne.
         """
         with self._lock:
-            return GPIO.input(self._out_pin) == GPIO.LOW
-        time.sleep(0.1)
-
-    def detect_line(self) -> str:
-        """
-        Retourne un message lisible selon la détection de ligne.
-        """
-        message = "Line detected" if self.read_data() else "No line detected"
-        print(message)
-        time.sleep(1)
+            return self.__is_on_line
         
-        # return "Line detected" if self.read_data() else "No line detected"
+    def run(self):
+        while True:
+            print("Vérification de la ligne...")
+            self.__is_on_line = self.read_data()
+            print(f"Capteur sur la ligne : {self.__is_on_line}")
+            time.sleep(1)
+                
+            
+    def read_data(self) -> bool:
+        """
+        Lit l'état du capteur : True si ligne détectée (niveau haut), False sinon.
+        """
+        with self._lock:
+            return GPIO.input(self._out_pin) == GPIO.HIGH
 
-    def stop(self):
-        """
-        Libère la broche GPIO utilisée par ce capteur uniquement.
-        """
-        GPIO.cleanup(self._out_pin)
