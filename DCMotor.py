@@ -2,8 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import PCA9685 as PCA
 
-
-class DCMotor:
+class DCMotor():
     def __init__(self):
         self.__MotorL_A = 17 
         self.__MotorL_B = 18 
