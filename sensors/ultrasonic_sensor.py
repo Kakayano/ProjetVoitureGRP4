@@ -19,9 +19,9 @@ class UltrasonicSensor(Sensor):
         :param thread: Thread pour mettre à jour la distance
         """
         
-        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=2.0)
+        self.__sensor = DistanceSensor(echo=echo_pin, trigger=trigger_pin, max_distance=4.0)
         self.__distance = None
-        self.__min_distance = 0.05
+        self.__min_distance = 0.03
         
     @property
     def distance(self):
@@ -37,7 +37,7 @@ class UltrasonicSensor(Sensor):
         Méthode exécutée dans le thread pour mettre à jour la distance mesurée par le capteur.
         Elle est appelée automatiquement lors du démarrage du thread.
         """
-        while True:
+        while self._running:
             self.read_data()
 
     def read_data(self):
@@ -50,14 +50,25 @@ class UltrasonicSensor(Sensor):
         with self._lock:
             if self.__sensor.distance is None:
                 self.__distance = None
-                print("Aucun écho reçu, la distance est hors de portée.") 
+                message = "Aucun écho reçu, la distance est hors de portée."
+                print(message)
+                self._log.write(message)
             elif self.__sensor.distance > self.__sensor.max_distance:
                 self.__distance = None
-                print(f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres.")
+                message = f"Distance hors de portée, au-delà de {self.__sensor.max_distance} mètres."
+                print(message)
+                self._log.write(message)
             elif self.__sensor.distance < self.__min_distance:
                 self.__distance = None
-                print("Distance trop proche, capteur hors de portée.")
+                message = "Distance trop proche, capteur hors de portée."
+                print(message)
             else:
                 self.__distance = round(self.__sensor.distance * 100, 2)
-                print(f"Distance mesurée: {self.__distance} cm")
-        time.sleep(0.25)
+                message = f"Distance mesurée: {self.__distance} cm"
+                print(message)
+                
+            self._log.write(message)
+
+        time.sleep(1)
+
+

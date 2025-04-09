@@ -23,7 +23,7 @@ class LineFollowSensor(Sensor):
             return self.__is_on_line
         
     def run(self):
-        while True:
+        while self._running:
             print("Vérification de la ligne...")
             self.__is_on_line = self.read_data()
             print(f"Capteur sur la ligne : {self.__is_on_line}")
@@ -34,6 +34,11 @@ class LineFollowSensor(Sensor):
         """
         Lit l'état du capteur : True si ligne détectée (niveau haut), False sinon.
         """
-        with self._lock:
-            return GPIO.input(self._out_pin) == GPIO.HIGH
-
+        try:
+            with self._lock:
+                return GPIO.input(self._out_pin) == GPIO.HIGH
+        except Exception as e:
+            error = f"Erreur de lecture du capteur : {e}"
+            print(error)
+            self._log.write(error)
+            return False
