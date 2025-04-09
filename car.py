@@ -137,8 +137,9 @@ if __name__ == "__main__":
         print("2. Faire un demi-tour")
         print("3. Eviter les obstacles")
         print("4. Arrêter la voiture et quitter")
+        print("5. Détecter la couleur verte")
         
-        choice = input("Choisissez une option (1-4): ")
+        choice = input("Choisissez une option (1-5): ")
         
         if choice == "1":
             try:
