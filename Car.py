@@ -128,47 +128,55 @@ class Car:
         i = True
         if side == "L":
             while i:
-                self.__motor.motor_forward(50)
+                self.__motor.motor_forward(70)
                 self.__ultrasonic_sensor_left.read_data()
                 distance = self.__ultrasonic_sensor_left.distance
                 self.__ultrasonic_sensor_top.read_data()
                 if distance is not None and distance < 5:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(25)
                 elif distance is not None and distance < 10:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(10)
                 elif distance is not None and distance > 30:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(-25)
                 elif distance is not None and distance > 15:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(-10)
                 else:
                     self.__servo.set_angle(0)  
-
+                '''
                 if self.__ultrasonic_sensor_top.distance <= 5:
                     self.__motor.stop_motor()
                     i = False
-                    break
+                    break'''
                     
         elif side == "R":
             while i:
-                self.__motor.motor_forward(50)
+                self.__motor.motor_forward(70)
                 self.__ultrasonic_sensor_right.read_data()
                 distance = self.__ultrasonic_sensor_right.distance
                 self.__ultrasonic_sensor_top.read_data()
                 if distance is not None and distance < 5:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(-25)
                 elif distance is not None and distance < 10:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(-10)
                 elif distance is not None and distance > 30:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(25)
                 elif distance is not None and distance > 15:
                     print(distance)
+                    self.__motor.motor_forward(30)
                     self.__servo.set_angle(10)
                 else:
                     self.__servo.set_angle(0)  
