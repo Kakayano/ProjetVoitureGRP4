@@ -2,6 +2,7 @@ from Moteur.DCMotor import DCMotor
 from Moteur.ServoMoteur import ServoMoteur
 from Capteur.ultrasonic_sensor import UltrasonicSensor
 from Capteur.LineFollowSensor import LineFollowSensor
+from Capteur.rgb_sensor import RGBSensor
 
 import threading
 import time
@@ -18,6 +19,7 @@ class Car:
         self.__ultrasonic_sensor_left = UltrasonicSensor("Ultrasonic", "GPIO", 11, 9)
         self.__ultrasonic_sensor_right = UltrasonicSensor("Ultrasonic", "GPIO", 26, 19)
         self.__line_follow_sensor = LineFollowSensor("LineFollow", "GPIO", 20)
+        self.__rgb_sensor = RGBSensor("RGB", "I2C")
 
         self._run_dodge = False
         self._dodge_thread = None
@@ -195,7 +197,7 @@ class Car:
                 if time.time() - start_time > 60:
                     print("Timeout: Aucune ligne détectée après 60 secondes")
                     break
-                
+
         except KeyboardInterrupt:
                 print("Interruption clavier détectée. Arrêt des moteurs...")
                 test_u.stop_car()
@@ -204,6 +206,18 @@ class Car:
         finally:
             self.__motor.stop_motor()
             print("Moteurs arrêtés")    
+
+    def detect_color(self):
+        '''
+        Méthode pour détecter la couleur
+        '''
+        
+        self.__rgb_sensor.start()
+        is_green = self.__rgb_sensor.green_found
+        if is_green:
+            print("La couleur détectée est verte.")
+        color = self.__rgb_sensor.green_found
+        print(f"Couleur détectée: {color}")
 
     def stop_car(self):
         '''
@@ -274,6 +288,17 @@ if __name__ == "__main__":
         elif choice == "6":
             try:
                 test_u.along_wall("L")
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+
+        elif choice == "7":
+            try:
+                test_u.detect_color()
             except KeyboardInterrupt:
                 print("Interruption clavier détectée. Arrêt des moteurs...")
                 test_u.stop_car()
