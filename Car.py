@@ -125,33 +125,58 @@ class Car:
         '''
         Méthode pour suivre un mur
         '''
+        i = True
         if side == "L":
-            while True:
+            while i:
                 self.__motor.motor_forward(50)
                 self.__ultrasonic_sensor_left.read_data()
                 distance = self.__ultrasonic_sensor_left.distance
-                if distance is not None and distance < 10:
+                self.__ultrasonic_sensor_top.read_data()
+                if distance is not None and distance < 5:
+                    print(distance)
+                    self.__servo.set_angle(25)
+                elif distance is not None and distance < 10:
+                    print(distance)
+                    self.__servo.set_angle(10)
+                elif distance is not None and distance > 30:
+                    print(distance)
+                    self.__servo.set_angle(-25)
+                elif distance is not None and distance > 15:
+                    print(distance)
+                    self.__servo.set_angle(-10)
+                else:
+                    self.__servo.set_angle(0)  
+
+                if self.__ultrasonic_sensor_top.distance <= 5:
+                    self.__motor.stop_motor()
+                    i = False
+                    break
+                    
+        elif side == "R":
+            while i:
+                self.__motor.motor_forward(50)
+                self.__ultrasonic_sensor_right.read_data()
+                distance = self.__ultrasonic_sensor_right.distance
+                self.__ultrasonic_sensor_top.read_data()
+                if distance is not None and distance < 5:
+                    print(distance)
+                    self.__servo.set_angle(-25)
+                elif distance is not None and distance < 10:
+                    print(distance)
+                    self.__servo.set_angle(-10)
+                elif distance is not None and distance > 30:
                     print(distance)
                     self.__servo.set_angle(25)
                 elif distance is not None and distance > 15:
                     print(distance)
-                    self.__servo.set_angle(-25)
+                    self.__servo.set_angle(10)
                 else:
                     self.__servo.set_angle(0)  
-                    
-        elif side == "R":
-            while True:
-                self.__motor.motor_forward(30)
-                self.__ultrasonic_sensor_right.read_data()
-                distance = self.__ultrasonic_sensor_right.distance
-                if distance is not None and distance < 10:
-                    print(distance )
-                    self.__servo.set_angle(-20)
-                elif distance is not None and distance > 20:
-                    print(distance)
-                    self.__servo.set_angle(20)
-                else:
-                    self.__servo.set_angle(0)
+
+                if self.__ultrasonic_sensor_top.distance <= 5:
+                    self.__motor.stop_motor()
+                    i = False
+                    break
                 
         else:
             raise ValueError("Le côté doit être 'L' ou 'R'.")
@@ -211,13 +236,29 @@ class Car:
         '''
         Méthode pour détecter la couleur
         '''
-        
-        self.__rgb_sensor.start()
+        self.__rgb_sensor.is_green()
         is_green = self.__rgb_sensor.green_found
-        if is_green:
-            print("La couleur détectée est verte.")
-        color = self.__rgb_sensor.green_found
-        print(f"Couleur détectée: {color}")
+        print (is_green)
+        while not is_green:
+            self.__rgb_sensor.is_green()
+            is_green = self.__rgb_sensor.green_found
+            print(is_green)
+            time.sleep(0.1)
+        self.run_straigth(50, 4)
+        
+    def course(self):
+        '''
+        Méthode pour faire avancer la voiture
+        '''
+        side = "L"
+        while True:
+            self.along_wall(side)
+            self.__motor.motor_forward(40)
+            if side == "L":
+                side = "R"
+            else:
+                side = "L"
+            
 
     def stop_car(self):
         '''
@@ -299,6 +340,17 @@ if __name__ == "__main__":
         elif choice == "7":
             try:
                 test_u.detect_color()
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+
+        elif choice == "8":
+            try:
+                test_u.course()
             except KeyboardInterrupt:
                 print("Interruption clavier détectée. Arrêt des moteurs...")
                 test_u.stop_car()

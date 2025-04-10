@@ -2,7 +2,6 @@ import board
 import busio
 from adafruit_ina219 import INA219
 from sensor import Sensor
-import threading
 import time
 
 class CurrentSensor(Sensor):
@@ -15,54 +14,59 @@ class CurrentSensor(Sensor):
         self.__i2c = busio.I2C(board.SCL, board.SDA)
         self.__sensor = INA219(self.__i2c)
 
-        self._voltage = 0.0
-        self._current = 0.0
-        self._power = 0.0
-
-        self._running = True  
-
-        self.__thread = threading.Thread(target=self.__update_loop)
-        self.__thread.daemon = True
-        self.__thread.start()
+        self.__voltage = 0.0
+        self.__current = 0.0
+        self.__power = 0.0
+        
+    def run(self):
+        """
+        Démarre la lecture des données du capteur dans un thread séparé.
+        """
+        while self._running:
+            print("Démarrage de la lecture des données...")
+            self.__update_loop()
+            time.sleep(1)
 
     def __update_loop(self):
         """
         Méthode interne qui lit les données en continu dans un thread.
         """
-        while self._running:
-            with self._lock:
-                self._voltage = round(self.__sensor.bus_voltage, 2)
-                self._current = round(self.__sensor.current / 1000, 3)
-                self._power = round(self.__sensor.power / 1000, 2)
-            time.sleep(1)
+        with self._lock:
+            self.__voltage = round(self.__sensor.bus_voltage, 2)
+            self.__current = round(self.__sensor.current / 1000, 3)
+            self.__power = round(self.__sensor.power / 1000, 2)
+            print(f"Current (brut): {self.__sensor.current}mA, Power (brut): {self.__sensor.power}mW")
+            print(f"Voltage: {self.__voltage}V, Current: {self.__current}A, Power: {self.__power}W")
+        time.sleep(1)
 
     def read_data(self):
         """ 
         Retourne les dernières données lues.
         """
-        with self._lock:
-            return {
-                "voltage": self._voltage,
-                "current": self._current,
-                "power": self._power,
-            }
+        try:
+            with self._lock:
+                return {
+                    "voltage": self.__voltage,
+                    "current": self.__current,
+                    "power": self.__power,
+                }
+        except Exception as e:
+            error = f"Erreur de lecture du capteur : {e}"
+            print(error)
+            self._log.write(error)
+            return None
 
-    def stop_reading(self):
-        """
-        Arrête la boucle de lecture.
-        """
-        self._running = False
-        if self.__thread.is_alive():
-            self.__thread.join()
-
-    def get_voltage(self):
+    @property
+    def voltage(self):
         with self._lock:
-            return self._voltage
+            return self.__voltage
 
-    def get_current(self):
+    @property
+    def current(self):
         with self._lock:
-            return self._current
+            return self.__current
 
-    def get_power(self):
+    @property
+    def power(self):
         with self._lock:
-            return self._power
+            return self.__power
