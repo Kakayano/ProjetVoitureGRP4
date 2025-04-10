@@ -199,6 +199,7 @@ class Car:
                     break
         elif side == "LR":
             self.__motor.motor_forward(70)
+            self.__servo.set_angle(0)
             while i:
                 self.__ultrasonic_sensor_right.read_data()
                 distance_right = self.__ultrasonic_sensor_right.distance
@@ -207,47 +208,50 @@ class Car:
                 self.__ultrasonic_sensor_top.read_data()
                 distance_top = self.__ultrasonic_sensor_top.distance
                 
-                if distance_left is not None and distance_right is not None and distance_right > 1.5 * distance_left:
-                    if distance_top is None or distance_top < 5:
+                if distance_left is not None and distance_right is not None and ( distance_right > 1.5 * distance_left or distance_left < 12 ):
+                    if distance_top is None or distance_top < 9:
                         print("distance_top")
                         self.__motor.motor_backward(-50)
-                        self.__servo.set_angle(-20)
-                        time.sleep(0.4)
+                        self.__servo.set_angle(-25)
+                        #time.sleep(0.4)
                         self.__servo.set_angle(0)
-                    print(distance_right)
-                    print(distance_left)
-                    self.__servo.set_angle(20)
+                    #print(distance_right)
+                    #print(distance_left)
+                    self.__servo.set_angle(25)
                     self.__motor.motor_forward(30) 
-                elif distance_left is not None and distance_right is not None and distance_left > 1.5 * distance_right:
-                    if distance_top is None or distance_top < 5:
+                elif distance_left is not None and distance_right is not None and (distance_left > 1.5 * distance_right or distance_right < 12):
+                    if distance_top is None or distance_top < 9:
                         print("distance_top")
                         self.__motor.motor_backward(-50)
-                        self.__servo.set_angle(20)
-                        time.sleep(0.4)
+                        self.__servo.set_angle(25)
+                        #time.sleep(0.4)
                         self.__servo.set_angle(0)
-                    print(distance_right)
-                    print(distance_left)
-                    self.__servo.set_angle(-20)
+                    #print(distance_right)
+                    #print(distance_left)
+                    self.__servo.set_angle(-25)
                     self.__motor.motor_forward(30)
                 elif distance_left is not None and distance_right is not None and distance_left >60 and distance_right > 60:
-                    if distance_top is None or distance_top < 5:
+                    if distance_top is None or distance_top < 9:
                         print("distance_top")
                         self.__motor.motor_backward(-50)
                         self.__servo.set_angle(0)
-                        time.sleep(0.4)
+                        #time.sleep(0.4)
                         self.__servo.set_angle(0)
                     self.__servo.set_angle(0)
-                    self.__motor.motor_forward(70)
+                    self.__motor.motor_forward(45)
                 else:
-                    if distance_top is None or distance_top < 5:
+                    if distance_top is None or distance_top < 9:
                         print("distance_top")
                         self.__motor.motor_backward(-50)
                         self.__servo.set_angle(0)
-                        time.sleep(0.4)
+                        #time.sleep(0.4)
                         self.__servo.set_angle(0)
                     self.__servo.set_angle(0)
-                    self.__motor.motor_forward(70)
+                    self.__motor.motor_forward(45)
                     time.sleep(0.1)
+                print("devant" ,distance_top)
+                print("gauche" ,distance_left)
+                print("droite" ,distance_right)
                 
         else:
             raise ValueError("Le côté doit être 'L' ou 'R'.")
@@ -423,6 +427,7 @@ if __name__ == "__main__":
             except KeyboardInterrupt:
                 print("Interruption clavier détectée. Arrêt des moteurs...")
                 test_u.stop_car()
+
             except Exception as e:
                 print(f"Erreur : {e}")
             finally:
