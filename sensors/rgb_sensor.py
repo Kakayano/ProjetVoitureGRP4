@@ -1,7 +1,7 @@
 import board
 import busio
 import adafruit_tcs34725
-from sensor import Sensor
+from sensors.sensor import Sensor
 import time
 
 class RGBSensor(Sensor):

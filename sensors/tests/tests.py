@@ -1,7 +1,7 @@
-from CurrentSensor import CurrentSensor
-from ultrasonic_sensor import UltrasonicSensor
-from rgb_sensor import RGBSensor
-from LineFollowSensor import LineFollowSensor
+from sensors.CurrentSensor import CurrentSensor
+from sensors.ultrasonic_sensor import UltrasonicSensor
+from sensors.rgb_sensor import RGBSensor
+from sensors.LineFollowSensor import LineFollowSensor
 import threading
 import time
 

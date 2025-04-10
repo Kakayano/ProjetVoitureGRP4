@@ -1,4 +1,4 @@
-from sensor import Sensor
+from sensors.sensor import Sensor
 import RPi.GPIO as GPIO
 import time
 

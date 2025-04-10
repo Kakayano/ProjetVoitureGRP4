@@ -1,4 +1,5 @@
 import PCA9685 as pca
+from log import Log
 
 class ServoMoteur:
     def __init__(self, channel=0, center_pulse=350, min_pulse=250, max_pulse=450): 
@@ -12,6 +13,7 @@ class ServoMoteur:
         self.__center_pulse = center_pulse # Largeur d'impulsion centrale
         self.__min_pulse = min_pulse # Largeur d'impulsion minimale
         self.__max_pulse = max_pulse # Largeur d'impulsion maximale
+        self.__log = Log()
 
     def set_angle(self, angle): # Définit l'angle du servo moteur
         '''
@@ -39,11 +41,13 @@ class ServoMoteur:
         Réinitialise le servo moteur à la position 0 degré.
         '''
         print("Réinitialisation du servo moteur...")
+        self.__log.write("Réinitialisation du servo moteur...", "debug")
         self.set_angle(0)  # Réinitialise l'angle à 0 degré
         self.disable()
 
     def disable(self):
         self.__pwm.write(0, 0, 0)
+        self.__log.write("Servo moteur désactivé.", "debug")
 
     def set_pwm(self, pulse_width): # Définit la largeur d'impulsion du servo moteur
         '''
@@ -52,3 +56,4 @@ class ServoMoteur:
         '''
         self.__pwm.write(self.__channel, 0, int(pulse_width))
         print(f'Pulse: {int(pulse_width)} µs on channel {self.__channel}')
+        self.__log.write(f'Pulse: {int(pulse_width)} µs on channel {self.__channel}', "debug")
