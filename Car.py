@@ -1,6 +1,7 @@
 from Moteur.DCMotor import DCMotor
 from Moteur.ServoMoteur import ServoMoteur
 from Capteur.ultrasonic_sensor import UltrasonicSensor
+from Capteur.LineFollowSensor import LineFollowSensor
 
 import threading
 import time
@@ -16,6 +17,7 @@ class Car:
         self.__ultrasonic_sensor_top = UltrasonicSensor("Ultrasonic", "GPIO", 6, 5)
         self.__ultrasonic_sensor_left = UltrasonicSensor("Ultrasonic", "GPIO", 11, 9)
         self.__ultrasonic_sensor_right = UltrasonicSensor("Ultrasonic", "GPIO", 26, 19)
+        self.__line_follow_sensor = LineFollowSensor("LineFollow", "GPIO", 20)
 
         self._run_dodge = False
         self._dodge_thread = None
@@ -123,15 +125,15 @@ class Car:
         '''
         if side == "L":
             while True:
-                self.__motor.motor_forward(30)
+                self.__motor.motor_forward(50)
                 self.__ultrasonic_sensor_left.read_data()
                 distance = self.__ultrasonic_sensor_left.distance
                 if distance is not None and distance < 10:
                     print(distance)
-                    self.__servo.set_angle(-20)
-                elif distance is not None and distance > 20:
+                    self.__servo.set_angle(25)
+                elif distance is not None and distance > 15:
                     print(distance)
-                    self.__servo.set_angle(20)
+                    self.__servo.set_angle(-25)
                 else:
                     self.__servo.set_angle(0)  
                     
@@ -142,10 +144,10 @@ class Car:
                 distance = self.__ultrasonic_sensor_right.distance
                 if distance is not None and distance < 10:
                     print(distance )
-                    self.__servo.set_angle(20)
+                    self.__servo.set_angle(-20)
                 elif distance is not None and distance > 20:
                     print(distance)
-                    self.__servo.set_angle(-20)
+                    self.__servo.set_angle(20)
                 else:
                     self.__servo.set_angle(0)
                 
@@ -153,7 +155,55 @@ class Car:
             raise ValueError("Le côté doit être 'L' ou 'R'.")
                 
 
+    def stop_after_finish_line(self, speed=30):
+        '''
+        Méthode pour faire avancer la voiture et s'arrêter après avoir franchi la ligne d'arrivée.
+        La voiture avance à la vitesse spécifiée, détecte la ligne d'arrivée, 
+        puis continue un peu avant de s'arrêter.
+        '''
+        print("La voiture recherche la ligne d'arrivée...")
         
+        # Activer le capteur de ligne s'il n'est pas déjà actif
+        self.__line_follow_sensor.start()
+        
+        # Préparation et démarrage
+        self.__servo.set_angle(0)  # Voiture en ligne droite
+        self.__motor.motor_forward(speed)
+        
+        line_found = False
+        start_time = time.time()
+        
+        try:
+            while not line_found:
+                # Vérifier si la ligne est détectée
+                if self.__line_follow_sensor.read_data():
+                    print("Ligne d'arrivée détectée!")
+                    line_found = True
+                    
+                    # Continue d'avancer pendant un court moment après la ligne
+                    time.sleep(0.5)  # Continue sur environ 15 cm à vitesse 30%
+                    
+                    # Arrêt des moteurs
+                    self.__motor.stop_motor()
+                    print("Voiture arrêtée après la ligne d'arrivée")
+                    break
+                
+                # Petit délai entre les vérifications
+                time.sleep(0.05)
+                
+                # Mesure de sécurité: timeout après 60 secondes
+                if time.time() - start_time > 60:
+                    print("Timeout: Aucune ligne détectée après 60 secondes")
+                    break
+                
+        except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+        except Exception as e:
+            print(f"Erreur: {e}")
+        finally:
+            self.__motor.stop_motor()
+            print("Moteurs arrêtés")    
 
     def stop_car(self):
         '''
@@ -209,6 +259,18 @@ if __name__ == "__main__":
             finally:
                 test_u.stop_car()
         
+        elif choice == "5":
+            try:
+                test_u.stop_after_finish_line()
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+
+
         elif choice == "6":
             try:
                 test_u.along_wall("L")
