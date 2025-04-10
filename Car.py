@@ -20,6 +20,7 @@ class Car:
         self.__ultrasonic_sensor_right = UltrasonicSensor("Ultrasonic", "GPIO", 26, 19)
         self.__line_follow_sensor = LineFollowSensor("LineFollow", "GPIO", 20)
         self.__rgb_sensor = RGBSensor("RGB", "I2C")
+        self.__is_green = False
 
         self._run_dodge = False
         self._dodge_thread = None
@@ -132,24 +133,39 @@ class Car:
                 self.__ultrasonic_sensor_left.read_data()
                 distance = self.__ultrasonic_sensor_left.distance
                 self.__ultrasonic_sensor_top.read_data()
-                if distance is not None and distance < 5:
+                distance_top = self.__ultrasonic_sensor_top.distance
+                if distance is not None and distance < 5 :
                     print(distance)
+                    print("mur à gauche -5")
                     self.__motor.motor_forward(30)
                     self.__servo.set_angle(25)
                 elif distance is not None and distance < 10:
                     print(distance)
+                    print("mur à gauche -10")
                     self.__motor.motor_forward(30)
                     self.__servo.set_angle(10)
-                elif distance is not None and distance > 30:
+                elif distance is not None and distance > 30 :
                     print(distance)
+                    print("mur plus à gauche +30")
                     self.__motor.motor_forward(30)
                     self.__servo.set_angle(-25)
-                elif distance is not None and distance > 15:
+                elif distance is not None and distance > 20:
                     print(distance)
+                    print("mur plus à gauche +15")
                     self.__motor.motor_forward(30)
                     self.__servo.set_angle(-10)
+                elif distance is not None and distance_top < 5:
+                    print(distance_top)
+                    print("mur au devant")
+                    self.__motor.motor_forward(30)
+                    self.__servo.set_angle(-25)
+                elif distance is None :
+                    print("Distance non mesurée.")
+                    self.__motor.motor_forward(30)
+                    self.__servo.set_angle(25)
                 else:
                     self.__servo.set_angle(0)  
+                    print(distance)
                 '''
                 if self.__ultrasonic_sensor_top.distance <= 5:
                     self.__motor.stop_motor()
@@ -244,15 +260,13 @@ class Car:
         '''
         Méthode pour détecter la couleur
         '''
-        self.__rgb_sensor.is_green()
-        is_green = self.__rgb_sensor.green_found
-        print (is_green)
-        while not is_green:
-            self.__rgb_sensor.is_green()
-            is_green = self.__rgb_sensor.green_found
-            print(is_green)
-            time.sleep(0.1)
-        self.run_straigth(50, 4)
+        self.__rgb_sensor.start()
+        while True:
+            self.__is_green = self.__rgb_sensor.is_green()
+            if self.__is_green:
+                self.__motor.motor_forward(30)
+                time.sleep(0.1)
+                break
         
     def course(self):
         '''

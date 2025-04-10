@@ -53,4 +53,4 @@ class ServoMotorTest:
 if __name__ == "__main__":
     test_servo = ServoMotorTest()
     test_servo.test_motor()
-    test_servo.disable()  # Désactiver le servo moteur après le test
+    #test_servo.disable()  # Désactiver le servo moteur après le test
