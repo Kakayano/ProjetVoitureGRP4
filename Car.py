@@ -258,6 +258,8 @@ class Car:
         self.__motor.motor_forward(70)
         self.__servo.set_angle(0)
         while i:
+            line_detected = self.__line_follow_sensor.read_data()
+
             self.__ultrasonic_sensor_right.read_data()
             distance_right = self.__ultrasonic_sensor_right.distance
             self.__ultrasonic_sensor_left.read_data()
@@ -270,11 +272,11 @@ class Car:
                 print("distance_top")
                 self.__motor.motor_backward(-45)
                 if T == 'R':
-                    self.__servo.set_angle(25)
+                    self.__servo.set_angle(30)
                 elif T == 'L':
-                    self.__servo.set_angle(-25)
+                    self.__servo.set_angle(-30)
                 else:
-                    self.__servo.set_angle(0)
+                    self.__servo.set_angle(20)
                 time.sleep(0.4)
                 self.__servo.set_angle(0)
 
@@ -302,6 +304,8 @@ class Car:
             print("devant" ,distance_top)
             print("gauche" ,distance_left)
             print("droite" ,distance_right)
+
+            
 
     def track_finish(self):
         '''
