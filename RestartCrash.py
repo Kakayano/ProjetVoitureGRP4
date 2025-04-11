@@ -204,4 +204,4 @@ class SystemChecker():
 
 if __name__ == "__main__":
     checker = SystemChecker()
-    checker.run_checks()
+    checker.reboot_system()

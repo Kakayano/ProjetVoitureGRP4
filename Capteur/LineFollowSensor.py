@@ -42,7 +42,7 @@ class LineFollowSensor(Sensor):
         except Exception as e:
             error = f"Erreur de lecture du capteur : {e}"
             print(error)
-            self._log.write(error)
+            self._log.write(error, "error")
             return False
 
     def detect_line(self) -> str:

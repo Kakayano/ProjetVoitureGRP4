@@ -63,7 +63,7 @@ class Car:
             self.__ultrasonic_sensor_top.read_data()
             distance = self.__ultrasonic_sensor_top.distance
 
-            if distance is not None and distance < 40:
+            if distance is not None and distance < 20:
                 print(f" Obstacle détecté à {distance} cm.")
                 self._run_dodge = False
 
@@ -85,20 +85,6 @@ class Car:
                 time.sleep(3)
                 self.__motor.stop_motor()
 
-                self.__servo.set_angle(-20)
-                self.__motor.motor_forward(30)
-                time.sleep(2)
-                self.__motor.stop_motor()
-
-                self.__servo.set_angle(20)
-                self.__motor.motor_forward(30)
-                time.sleep(2)
-                self.__motor.stop_motor()
-
-                self.__servo.set_angle(0)
-                self.__motor.motor_forward(30)
-                time.sleep(3)
-                self.__motor.stop_motor()
 
                 self.__servo.disable()
                 print(" Obstacle évité.")
@@ -253,7 +239,7 @@ class Car:
 
         except KeyboardInterrupt:
                 print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
+                self.stop_car()
         except Exception as e:
             print(f"Erreur: {e}")
         finally:
@@ -286,47 +272,40 @@ class Car:
             distance_left = self.__ultrasonic_sensor_left.distance
             self.__ultrasonic_sensor_top.read_data()
             distance_top = self.__ultrasonic_sensor_top.distance
-            
-            if distance_left is not None and distance_right is not None and ( distance_right > 1.5 * distance_left or distance_left < 12 ):
-                if distance_top is None or distance_top < 9:
-                    print("distance_top")
-                    self.__motor.motor_backward(-50)
+            T = 'D'
+                
+            if distance_top is None or distance_top < 9  or distance_top >= 400:
+                print("distance_top")
+                self.__motor.motor_backward(-45)
+                if T == 'R':
+                    self.__servo.set_angle(25)
+                elif T == 'L':
                     self.__servo.set_angle(-25)
-                    #time.sleep(0.4)
+                else:
                     self.__servo.set_angle(0)
+                time.sleep(0.4)
+                self.__servo.set_angle(0)
+
+            if distance_left is not None and distance_right is not None and ( distance_right > 1.5 * distance_left or distance_left < 12 ):
+                T = 'R'
                 #print(distance_right)
                 #print(distance_left)
                 self.__servo.set_angle(25)
-                self.__motor.motor_forward(30) 
+                self.__motor.motor_forward(25) 
             elif distance_left is not None and distance_right is not None and (distance_left > 1.5 * distance_right or distance_right < 12):
-                if distance_top is None or distance_top < 9:
-                    print("distance_top")
-                    self.__motor.motor_backward(-50)
-                    self.__servo.set_angle(25)
-                    #time.sleep(0.4)
-                    self.__servo.set_angle(0)
+                T = 'L'
                 #print(distance_right)
                 #print(distance_left)
                 self.__servo.set_angle(-25)
-                self.__motor.motor_forward(30)
+                self.__motor.motor_forward(25)
             elif distance_left is not None and distance_right is not None and distance_left >60 and distance_right > 60:
-                if distance_top is None or distance_top < 9:
-                    print("distance_top")
-                    self.__motor.motor_backward(-50)
-                    self.__servo.set_angle(0)
-                    #time.sleep(0.4)
-                    self.__servo.set_angle(0)
+                T = 'D'
                 self.__servo.set_angle(0)
-                self.__motor.motor_forward(45)
+                self.__motor.motor_forward(40)
             else:
-                if distance_top is None or distance_top < 9:
-                    print("distance_top")
-                    self.__motor.motor_backward(-50)
-                    self.__servo.set_angle(0)
-                    #time.sleep(0.4)
-                    self.__servo.set_angle(0)
+                T = 'D'
                 self.__servo.set_angle(0)
-                self.__motor.motor_forward(45)
+                self.__motor.motor_forward(40)
                 time.sleep(0.1)
             print("devant" ,distance_top)
             print("gauche" ,distance_left)

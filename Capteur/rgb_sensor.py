@@ -58,14 +58,14 @@ class RGBSensor(Sensor):
                 with self._lock:
                     self.__rvb = {"rouge": 0, "vert": 0, "bleu": 0}
                     error = "Erreur : Données manquantes ou invalides pour RGB."
-                    self._log.write(error)
+                    self._log.write(error, "error")
                 raise ValueError(error)
                 
             if not r or not v or not b:
                 with self._lock:
                     self.__rvb = {"rouge": r if r else 0, "vert": v if v else 0, "bleu": b if b else 0}
                     error = f"Avertissement : Une ou plusieurs valeurs RGB sont à 0. Valeurs lues: Rouge={r}, Vert={v}, Bleu={b}."
-                    self._log.write(error)
+                    self._log.write(error, "warning")
                 raise ValueError(error)
             
             print(f"Rouge: {r}, Vert: {v}, Bleu: {b}")
@@ -77,7 +77,7 @@ class RGBSensor(Sensor):
                 
         except Exception as e:
             error = f"Erreur lors de la lecture des données RGB: {e}"
-            self._log.write(error)
+            self._log.write(error, "error")
             print(error)
             with self._lock:
                 self.__rvb["rouge"] = 0
@@ -98,7 +98,7 @@ class RGBSensor(Sensor):
                 self.__green_found = self.__rvb["vert"] > self.__rvb["rouge"] * threshold and self.__rvb["vert"] > self.__rvb["bleu"] * threshold
         except Exception as e:
             error = f"Erreur lors de la vérification de la couleur: {e}"
-            self._log.write(error)
+            self._log.write(error, "error")
             print(error)
             self.__green_found = False
         return self.__green_found
