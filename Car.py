@@ -196,55 +196,47 @@ class Car:
         self.__system_checker.run_checks()
         
 
-    def stop_after_finish_line(self, speed=30):
+    def run_for_laps(self, laps=1, speed=50):
         '''
-        Méthode pour faire avancer la voiture et s'arrêter après avoir franchi la ligne d'arrivée.
-        La voiture avance à la vitesse spécifiée, détecte la ligne d'arrivée, 
-        puis continue un peu avant de s'arrêter.
-        '''
-        print("La voiture recherche la ligne d'arrivée...")
-        
-        # Activer le capteur de ligne s'il n'est pas déjà actif
-        self.__line_follow_sensor.start()
-        
-        # Préparation et démarrage
-        self.__servo.set_angle(0)  # Voiture en ligne droite
-        self.__motor.motor_forward(speed)
-        
-        line_found = False
-        start_time = time.time()
-        
-        try:
-            while not line_found:
-                # Vérifier si la ligne est détectée
-                if self.__line_follow_sensor.read_data():
-                    print("Ligne d'arrivée détectée!")
-                    line_found = True
-                    
-                    # Continue d'avancer pendant un court moment après la ligne
-                    time.sleep(0.5)  # Continue sur environ 15 cm à vitesse 30%
-                    
-                    # Arrêt des moteurs
-                    self.__motor.stop_motor()
-                    print("Voiture arrêtée après la ligne d'arrivée")
-                    break
-                
-                # Petit délai entre les vérifications
-                time.sleep(0.05)
-                
-                # Mesure de sécurité: timeout après 60 secondes
-                if time.time() - start_time > 60:
-                    print("Timeout: Aucune ligne détectée après 60 secondes")
-                    break
+        Fait avancer la voiture et utilise le capteur de ligne pour compter le nombre de tours effectués.
+        La voiture s'arrête immédiatement après avoir détecté le nombre de lignes correspondant aux tours demandés.
 
-        except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                self.stop_car()
+        :param laps: Nombre de passages sur la ligne (tours) avant arrêt
+        :param speed: Vitesse à laquelle la voiture avance
+        '''
+        if laps <= 0:
+            print("Le nombre de tours doit être supérieur à 0.")
+            return
+
+        self.__servo.disable()
+        self.__motor.motor_forward(speed)
+
+        current_lap = -1 # Doit passer la première ligne pour être à 0
+        on_line = False
+
+        try:
+            while True:
+                line_detected = self.__line_follow_sensor.read_data()
+
+                # Détection du front montant : passage de False à True
+                if line_detected and not on_line:
+                    current_lap += 1
+                    print(f"Ligne détectée - Tour {current_lap}")
+                    on_line = True
+
+                    if current_lap >= laps:
+                        print("Nombre de tours atteint, arrêt de la voiture.")
+                        self.__motor.stop_motor()
+                        break
+
+                elif not line_detected:
+                    on_line = False
+
+                time.sleep(0.05)
+
         except Exception as e:
-            print(f"Erreur: {e}")
-        finally:
+            print(f"Erreur pendant le comptage des tours : {e}")
             self.__motor.stop_motor()
-            print("Moteurs arrêtés")    
 
     def detect_color(self):
         '''
@@ -347,10 +339,11 @@ if __name__ == "__main__":
             print("8. Suivre le parcours")
             print("9. Vérifier le système")
             print("10. Commencer la course avec le feu vert")
-            print("11. Reboot le système")
+            print("11. Effectuer un nombre de tours")
+            print("12. Reboot le système")
 
 
-            choice = input("Choisissez une option (1-11): ")
+            choice = input("Choisissez une option (1-12): ")
 
             if choice == "1":
                 try:
@@ -455,6 +448,18 @@ if __name__ == "__main__":
                     test_u.stop_car()
 
             elif choice == "11":
+                try:
+                    laps = int(input("Entrez le nombre de tours à effectuer : "))
+                    test_u.run_for_laps(laps=laps, speed=50)
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "12":
                 try:
                     test_u.reboot_system()
                 except KeyboardInterrupt:
