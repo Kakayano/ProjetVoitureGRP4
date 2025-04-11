@@ -120,6 +120,34 @@ class Car:
             self._dodge_thread.start()
         else:
             print(" Détection déjà en cours...")
+            
+    def run_until_line_then_stop(self, speed=50, post_detection_duration=0.5):
+        '''
+        Fait avancer la voiture et s'arrête peu après avoir détecté une ligne noire.
+        La ligne est détectée une seule fois, puis la voiture continue brièvement avant de s'arrêter.
+
+        :param speed: Vitesse du moteur pendant le déplacement (défaut = 50)
+        :param post_detection_duration: Durée d'avance après détection (secondes)
+        '''
+        self.__servo.disable()
+        self.__motor.motor_forward(speed)
+
+        try:
+            while True:
+                line_detected = self.__line_follow_sensor.read_data()
+                print(f"Détection actuelle : {line_detected}")
+
+                if line_detected:
+                    print("ligne détectée")
+                    time.sleep(post_detection_duration)  # avance encore un petit peu
+                    self.__motor.stop_motor()
+                    break
+
+                time.sleep(0.01)
+
+        except Exception as e:
+            print(f"Erreur pendant le suivi de ligne : {e}")
+            self.__motor.stop_motor()
 
     def along_wall(self, side = "L"):
         '''
@@ -356,8 +384,9 @@ if __name__ == "__main__":
         print("6. Suivre le mur à gauche")
         print("7. Détecter la couleur")
         print("8. Suivre le mur à gauche et à droite")
+        print("9. Avancer jusqu'à la ligne puis s'arrêter")
 
-        choice = input("Choisissez une option (1-8): ")
+        choice = input("Choisissez une option (1-9): ")
 
         if choice == "1":
             try:
@@ -433,6 +462,18 @@ if __name__ == "__main__":
                 print("Interruption clavier détectée. Arrêt des moteurs...")
                 test_u.stop_car()
 
+            except Exception as e:
+                print(f"Erreur : {e}")
+            finally:
+                test_u.stop_car()
+                
+        elif choice == "9":
+            try:
+                test_u.run_until_line_then_stop(speed=50, post_detection_duration=0.8)
+            except KeyboardInterrupt:
+                print("Interruption clavier détectée. Arrêt des moteurs...")
+                test_u.stop_car()
+                GPIO.cleanup()
             except Exception as e:
                 print(f"Erreur : {e}")
             finally:
