@@ -53,5 +53,5 @@ Le projet implémente les fonctionnalités suivantes, issues des **User Stories*
 2. Connexion SSH au Raspberry Pi.
 3. Lancer le script d’initialisation :
    ```bash
-   python3 main.py
+   sudo python3 Car.py
 
