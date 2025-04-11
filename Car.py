@@ -70,12 +70,12 @@ class Car:
                 self.__motor.stop_motor()
                 time.sleep(0.5)
 
-                self.__servo.set_angle(20)
+                self.__servo.set_angle(-20)
                 self.__motor.motor_forward(30)
                 time.sleep(2)
                 self.__motor.stop_motor()
 
-                self.__servo.set_angle(-20)
+                self.__servo.set_angle(20)
                 self.__motor.motor_forward(30)
                 time.sleep(2)
                 self.__motor.stop_motor()
@@ -307,16 +307,84 @@ class Car:
 
             
 
-    def track_finish(self):
+    def track_finish(self, laps=1):
         '''
         Méthode pour la course
         '''
         self.detect_color()
-        self.track_less_green()
+        self.track_less_green_for_laps(laps=laps)
 
     def reboot_system(self):
         self.__system_checker.reboot_system()
      
+    def track_less_green_for_laps(self, laps=1):
+        '''
+        Suivre un circuit tout en comptant un nombre de tours à partir de la ligne noire.
+        '''
+        if laps <= 0:
+            print("Le nombre de tours doit être supérieur à 0.")
+            return
+
+        print(f"Début de la course pour {laps} tour(s).")
+        current_lap = -1  # Attente du premier passage
+        on_line = False
+
+        self.__motor.motor_forward(70)
+        self.__servo.set_angle(0)
+
+        try:
+            while True:
+                # Détection ligne noire
+                line_detected = self.__line_follow_sensor.read_data()
+                if line_detected and not on_line:
+                    current_lap += 1
+                    print(f"Ligne détectée - Tour {current_lap}")
+                    on_line = True
+
+                    if current_lap >= laps:
+                        print("Nombre de tours atteint. Arrêt.")
+                        self.__motor.stop_motor()
+                        break
+                elif not line_detected:
+                    on_line = False
+
+                # Lecture des distances
+                self.__ultrasonic_sensor_right.read_data()
+                distance_right = self.__ultrasonic_sensor_right.distance
+                self.__ultrasonic_sensor_left.read_data()
+                distance_left = self.__ultrasonic_sensor_left.distance
+                self.__ultrasonic_sensor_top.read_data()
+                distance_top = self.__ultrasonic_sensor_top.distance
+
+                # Évitement obstacle
+                if distance_top is None or distance_top < 9 or distance_top >= 400:
+                    print("Obstacle devant")
+                    self.__motor.motor_backward(-45)
+                    self.__servo.set_angle(20)
+                    time.sleep(0.4)
+                    self.__servo.set_angle(0)
+
+                # Évitement latéral
+                if distance_left and distance_right:
+                    if distance_right > 1.5 * distance_left or distance_left < 12:
+                        self.__servo.set_angle(25)
+                        self.__motor.motor_forward(25)
+                    elif distance_left > 1.5 * distance_right or distance_right < 12:
+                        self.__servo.set_angle(-25)
+                        self.__motor.motor_forward(25)
+                    elif distance_left > 60 and distance_right > 60:
+                        self.__servo.set_angle(0)
+                        self.__motor.motor_forward(40)
+                    else:
+                        self.__servo.set_angle(0)
+                        self.__motor.motor_forward(40)
+
+                time.sleep(0.05)
+
+        except Exception as e:
+            print(f"Erreur pendant le suivi : {e}")
+            self.__motor.stop_motor()
+
 
     def stop_car(self):
         '''
@@ -344,10 +412,11 @@ if __name__ == "__main__":
             print("9. Vérifier le système")
             print("10. Commencer la course avec le feu vert")
             print("11. Effectuer un nombre de tours")
-            print("12. Reboot le système")
+            print("12. Suivre le parcours avec le feu vert")
+            print("13. Reboot le système")
 
 
-            choice = input("Choisissez une option (1-12): ")
+            choice = input("Choisissez une option (1-13): ")
 
             if choice == "1":
                 try:
@@ -442,7 +511,8 @@ if __name__ == "__main__":
 
             elif choice == "10":
                 try:
-                    test_u.track_finish()
+                    laps = int(input("Entrez le nombre de tours à effectuer : "))
+                    test_u.track_finish(laps=laps)
                 except KeyboardInterrupt:
                     print("Interruption clavier détectée. Arrêt des moteurs...")
                     test_u.stop_car()
@@ -464,6 +534,18 @@ if __name__ == "__main__":
                     test_u.stop_car()
 
             elif choice == "12":
+                try:
+                    laps = int(input("Nombre de tours à effectuer avec suivi du parcours : "))
+                    test_u.track_less_green_for_laps(laps)
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "13":
                 try:
                     test_u.reboot_system()
                 except KeyboardInterrupt:
