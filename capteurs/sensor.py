@@ -17,4 +17,5 @@ class Sensor(ABC, threading.Thread):
         
     def stop(self):
         self._running = False
-        self.join()
+        if self.is_alive():
+            self.join()

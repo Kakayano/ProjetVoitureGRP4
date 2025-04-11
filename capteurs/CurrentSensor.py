@@ -1,7 +1,7 @@
 import board
 import busio
 from adafruit_ina219 import INA219
-from sensors.sensor import Sensor
+from capteurs.sensor import Sensor
 import time
 
 class CurrentSensor(Sensor):

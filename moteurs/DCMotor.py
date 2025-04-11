@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
-import PCA9685 as PCA
+import moteurs.PCA9685 as PCA
+from log import Log
 
 
 class DCMotor:
@@ -15,6 +16,7 @@ class DCMotor:
         self.__EN_MG = 4 # Enable Pin GPIO pour le moteur gauche (PWM)
         self.__EN_MD = 5 # Enable Pin GPIO pour le moteur droit (PWM)
         self.__pins = [self.__MotorL_A, self.__MotorL_B, self.__MotorR_A, self.__MotorR_B] # Liste des pins GPIO
+        self.__log = Log()
         
         '''
         On instancie un objet PWM et on lui attribue une fréquence de 60Hz
@@ -49,6 +51,7 @@ class DCMotor:
         elle prend en parametre la vitesse
         '''
         print(f"Vitesse : {speed}")
+        self.__log.write(f"Vitesse : {speed} en marche avant", "debug")
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
         self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
 
@@ -60,10 +63,12 @@ class DCMotor:
         si c'est le cas on leve une exception
         '''
         if ((speed)<0):
-            print(f"Vitesse : {-speed}")
+            print(f"Vitesse : {speed}")
+            self.__log.write(f"Vitesse : {speed} en marche arrière", "debug")
             self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, self.__convert_speed(speed))
             self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, self.__convert_speed(speed))
         else:
+            self.__log.write("La vitesse doit etre négative !", "error")
             raise ValueError("La vitesse doit etre négative !")
 
 
@@ -72,8 +77,8 @@ class DCMotor:
         Methode pour arreter les moteurs
         '''
         self.__set_motor_state(self.__MotorL_A, self.__MotorL_B, 0)
-        self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, 0) 
-        GPIO.cleanup() # Nettoyer les GPIO à la fin du programme
+        self.__set_motor_state(self.__MotorR_A, self.__MotorR_B, 0)
+        self.__log.write("Les moteurs sont arrêtés", "info")
 
     def __convert_speed(self, speed):  # Methode pour convertir la vitesse de -100 à 100 en valeur PWM de 0 à 4095
         '''
@@ -89,28 +94,5 @@ class DCMotor:
         elle affiche un message d'erreur et arrete les moteurs
         '''
         print("Arrêt d'urgence des moteurs !")
+        self.__log.write("Arrêt d'urgence des moteurs !", "warning")
         self.stop_motor()
-
-# Exemple d'utilisation
-if __name__ == "__main__":
-    test_motor = DCMotor()
-
-    try:
-        test_motor.motor_forward(70)  
-        time.sleep(3)  # Avancer pendant 3 secondes
-        test_motor.motor_forward(30) 
-        time.sleep(3)  # Avancer pendant 3 secondes
-        test_motor.motor_backward(-70)
-        time.sleep(3)  # Reculer pendant 3 secondes
-        test_motor.motor_backward(-30)
-        time.sleep(3)  # Reculer pendant 3 secondes
-        test_motor.stop_motor()  # Arrêter les moteurs
-
-    except KeyboardInterrupt:
-        print("Interruption clavier détectée. Arrêt des moteurs...")
-        test_motor.emergency_stop()
-
-    except Exception as e:
-        print(f"Erreur : {e}")
-    finally:
-        GPIO.cleanup()  # Nettoyer les GPIO à la fin du programme

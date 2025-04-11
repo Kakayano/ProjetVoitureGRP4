@@ -1,4 +1,4 @@
-import PCA9685 as pca
+import moteurs.PCA9685 as pca
 from log import Log
 
 class ServoMoteur:
@@ -25,7 +25,7 @@ class ServoMoteur:
         if angle > 30:
             angle = 30
         # Contrainte de l'angle entre -30 et 30 degrés
-        
+        self.__log.write(f"Angle du servo moteur : {angle} degrés", "debug")
         angle = max(-30, min(30, angle))  # Constrain l'angle entre -30 et 30
         if angle > 0:
             pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__max_pulse - self.__center_pulse))
@@ -47,7 +47,7 @@ class ServoMoteur:
 
     def disable(self):
         self.__pwm.write(0, 0, 0)
-        self.__log.write("Servo moteur désactivé.", "debug")
+        self.__log.write("Servo moteur désactivé.", "info")
 
     def set_pwm(self, pulse_width): # Définit la largeur d'impulsion du servo moteur
         '''
