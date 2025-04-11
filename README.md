@@ -50,7 +50,7 @@ Le projet implémente les fonctionnalités suivantes, issues des **User Stories*
 ## Installation
 
 1. Flash de la carte µSD avec Raspbian (GUI).
-2. Connexion SSH au Raspberry Pi.
+2. Connexion SSH au Raspberry Pi 3B.
 3. Lancer le script d’initialisation :
    ```bash
    sudo python3 Car.py
