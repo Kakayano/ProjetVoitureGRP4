@@ -25,7 +25,7 @@ class ServoMoteur:
         if angle > 30:
             angle = 30
         # Contrainte de l'angle entre -30 et 30 degrés
-        
+        self.__log.write(f"Angle demandé : {angle} degrés", "debug")
         angle = max(-30, min(30, angle))  # Constrain l'angle entre -30 et 30
         if angle > 0:
             pulse_width = self.__center_pulse + ((angle / 30.0) * (self.__max_pulse - self.__center_pulse))
