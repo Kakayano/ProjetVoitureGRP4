@@ -63,19 +63,19 @@ class Car:
             self.__ultrasonic_sensor_top.read_data()
             distance = self.__ultrasonic_sensor_top.distance
 
-            if distance is not None and distance < 20:
+            if distance is not None and distance < 25:
                 print(f" Obstacle détecté à {distance} cm.")
                 self._run_dodge = False
 
                 self.__motor.stop_motor()
                 time.sleep(0.5)
 
-                self.__servo.set_angle(-20)
+                self.__servo.set_angle(-25)
                 self.__motor.motor_forward(30)
                 time.sleep(2)
                 self.__motor.stop_motor()
 
-                self.__servo.set_angle(20)
+                self.__servo.set_angle(25)
                 self.__motor.motor_forward(30)
                 time.sleep(2)
                 self.__motor.stop_motor()
@@ -83,6 +83,14 @@ class Car:
                 self.__servo.set_angle(0)
                 self.__motor.motor_forward(30)
                 time.sleep(3)
+                self.__motor.stop_motor()
+
+                self.__servo.set_angle(-25)
+                self.__motor.motor_forward(30)
+                time.sleep(2)
+                self.__servo.set_angle(0)
+                self.__motor.motor_forward(30)
+                time.sleep(0.5)
                 self.__motor.stop_motor()
 
 
