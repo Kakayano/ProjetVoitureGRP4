@@ -3,6 +3,8 @@ from Moteur.ServoMoteur import ServoMoteur
 from Capteur.ultrasonic_sensor import UltrasonicSensor
 from Capteur.LineFollowSensor import LineFollowSensor
 from Capteur.rgb_sensor import RGBSensor
+from RestartCrash import SystemChecker
+import os
 
 import threading
 import time
@@ -21,6 +23,7 @@ class Car:
         self.__line_follow_sensor = LineFollowSensor("LineFollow", "GPIO", 20)
         self.__rgb_sensor = RGBSensor("RGB", "I2C")
         self.__is_green = False
+        self.__system_checker = SystemChecker()
 
         self._run_dodge = False
         self._dodge_thread = None
@@ -199,7 +202,13 @@ class Car:
                     break     
         else:
             raise ValueError("Le côté doit être 'L' ou 'R'.")
-                
+
+    def check(self):
+        '''
+        Méthode pour vérifier le système
+        '''
+        self.__system_checker.run_checks()
+        
 
     def stop_after_finish_line(self, speed=30):
         '''
@@ -263,7 +272,7 @@ class Car:
                 time.sleep(0.1)
                 break
         
-    def course(self):
+    def track_less_green(self):
         '''
         Méthode pour faire avancer la voiture
         '''
@@ -322,7 +331,17 @@ class Car:
             print("devant" ,distance_top)
             print("gauche" ,distance_left)
             print("droite" ,distance_right)
-            
+
+    def track_finish(self):
+        '''
+        Méthode pour la course
+        '''
+        self.detect_color()
+        self.track_less_green()
+
+    def reboot_system(self):
+        self.__system_checker.reboot_system()
+     
 
     def stop_car(self):
         '''
@@ -335,99 +354,144 @@ class Car:
         self.__servo.disable()
 
 if __name__ == "__main__":
-    test_u = Car()
-    while True:
-        print("\nMenu:")
-        print("1. Faire avancer la voiture")
-        print("2. Faire un demi-tour")
-        print("3. Eviter les obstacles")
-        print("4. Arrêter la voiture et quitter")
-
-        choice = input("Choisissez une option (1-4): ")
-
-        if choice == "1":
-            try:
-                test_u.run_straigth(50, 8)
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
-
-        elif choice == "2":
-            try:
-                test_u.u_turn()
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
-
-        elif choice == "3":
-            try:
-                test_u.dodge_obstacle()
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
-        
-        elif choice == "5":
-            try:
-                test_u.stop_after_finish_line()
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
+    def menu():
+        test_u = Car()
+        while True:
+            print("\nMenu:")
+            print("1. Faire avancer la voiture")
+            print("2. Faire un demi-tour")
+            print("3. Eviter les obstacles")
+            print("4. Arrêter la voiture et quitter")
+            print("5. Arrêter la voiture après la ligne d'arrivée")
+            print("6. Suivre un mur")
+            print("7. Détecter la couleur")
+            print("8. Suivre le parcours")
+            print("9. Vérifier le système")
+            print("10. Commencer la course avec le feu vert")
+            print("11. Reboot le système")
 
 
-        elif choice == "6":
-            try:
-                test_u.along_wall("L")
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
+            choice = input("Choisissez une option (1-11): ")
 
-        elif choice == "7":
-            try:
-                test_u.detect_color()
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
+            if choice == "1":
+                try:
+                    test_u.run_straigth(50, 8)
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
 
-        elif choice == "8":
-            try:
-                test_u.course()
-            except KeyboardInterrupt:
-                print("Interruption clavier détectée. Arrêt des moteurs...")
-                test_u.stop_car()
+            elif choice == "2":
+                try:
+                    test_u.u_turn()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
 
-            except Exception as e:
-                print(f"Erreur : {e}")
-            finally:
-                test_u.stop_car()
+            elif choice == "3":
+                try:
+                    test_u.dodge_obstacle()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+            
+            elif choice == "5":
+                try:
+                    test_u.stop_after_finish_line()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
 
-        elif choice == "4":
-            print("Arrêt de la voiture et sortie du programme.")
-            test_u.stop_car()
-            GPIO.cleanup()
-            break
-        else:
-            print("Option invalide. Veuillez réessayer.")
+
+            elif choice == "6":
+                try:
+                    test_u.along_wall("L")
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "7":
+                try:
+                    test_u.detect_color()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "8":
+                try:
+                    test_u.track_less_green()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "9":
+                try:
+                    test_u.check()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "10":
+                try:
+                    test_u.track_finish()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+            elif choice == "11":
+                try:
+                    test_u.reboot_system()
+                except KeyboardInterrupt:
+                    print("Interruption clavier détectée. Arrêt des moteurs...")
+                    test_u.stop_car()
+                except Exception as e:
+                    print(f"Erreur : {e}")
+                finally:
+                    test_u.stop_car()
+
+
+            elif choice == "4":
+                print("Arrêt de la voiture et sortie du programme.")
+                test_u.stop_car()
+                GPIO.cleanup()
+                break
+            else:
+                print("Option invalide. Veuillez réessayer.")
+    menu()
