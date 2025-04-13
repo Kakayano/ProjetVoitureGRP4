@@ -46,6 +46,18 @@ Le projet implémente les fonctionnalités suivantes, issues des **User Stories*
   - Trello pour le Scrum Board
   - GitHub pour la gestion du code
   - SSH & VNC pour le contrôle du module
+ 
+## UML
+
+### Diagramme de classe
+
+* [Diagramme de classe final](https://github.com/Kakayano/ProjetVoitureGRP4/blob/main/UML/ClassFinal.jpg)
+
+### Diagrammes de séquence
+
+* [Diagramme de séquence du capteur RGB](https://github.com/Kakayano/ProjetVoitureGRP4/blob/main/UML/SequenceRGBSensor.png)  
+
+* [Diagramme de séquence du capteur ultrasons](https://github.com/Kakayano/ProjetVoitureGRP4/blob/main/UML/SequenceUltrasonicSensor.png)
 
 ## Installation
 
